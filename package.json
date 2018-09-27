@@ -17,7 +17,8 @@
   },
   "keywords": [
     "vue",
-    "javascript"
+    "javascript",
+    "gamepad"
   ],
   "author": "Aaron Kirkham",
   "license": "MIT",
