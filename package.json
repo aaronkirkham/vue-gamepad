@@ -1,0 +1,31 @@
+{
+  "name": "vue-gamepad",
+  "version": "1.0.0",
+  "description": "A Vue.js plugin to add gamepad support.",
+  "main": "./dist/vue-gamepad.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "build": "node build.js && cp dist/vue-gamepad.js ~/desktop/vuetest/src/vue-gamepad/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaronkirkham/vue-gamepad.git"
+  },
+  "keywords": [
+    "vue",
+    "javascript"
+  ],
+  "author": "Aaron Kirkham",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aaronkirkham/vue-gamepad/issues"
+  },
+  "homepage": "https://github.com/aaronkirkham/vue-gamepad#readme",
+  "devDependencies": {
+    "rollup": "^0.66.2"
+  }
+}
