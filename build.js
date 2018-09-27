@@ -1,12 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const rollup = require('rollup');
-const { performance } = require('perf_hooks');
 
 async function build() {
   try {
-    const start = performance.now();
-
     const bundle = await rollup.rollup({
       input: path.resolve(__dirname, 'lib/index.js'),
       plugins: [],
@@ -21,10 +18,7 @@ async function build() {
     await write(path.resolve(__dirname, 'dist/vue-gamepad.js'), code);
     await write(path.resolve(__dirname, 'dist/vue-gamepad.js.map'), map);
 
-    const took = Math.floor(performance.now() - start) + 'ms';
-    const size = (code.length / 1024).toFixed(2) + 'kb';
-
-    console.log(`Built in ${took}, size=${size}.`);
+    console.log(`Built. Size=${(code.length / 1024).toFixed(2)}kb.`);
   } catch (e) {
     console.error(e);
   }

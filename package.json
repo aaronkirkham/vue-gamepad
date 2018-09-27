@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "node build.js && cp dist/vue-gamepad.js ~/desktop/vuetest/src/vue-gamepad/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,14 @@
   },
   "homepage": "https://github.com/aaronkirkham/vue-gamepad#readme",
   "devDependencies": {
-    "rollup": "^0.66.2"
+    "@vue/test-utils": "^1.0.0-beta.25",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-preset-env": "^1.7.0",
+    "flush-promises": "^1.0.0",
+    "jest": "^23.6.0",
+    "regenerator-runtime": "^0.12.1",
+    "vue": "^2.5.17",
+    "vue-template-compiler": "^2.5.17"
   }
 }
