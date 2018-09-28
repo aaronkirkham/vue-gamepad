@@ -1,4 +1,6 @@
-# Vue-Gamepad
+<p align="center"><img width="128px" src="./assets/logo.svg" alt="Vue Gamepad logo"></p>
+<h1 align="center">vue-gamepad</h1>
+
 A Vue.js plugin to add gamepad support
 
 ## Usage
