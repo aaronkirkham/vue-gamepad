@@ -1,6 +1,12 @@
 <p align="center"><img width="128px" src="./assets/logo.svg" alt="Vue Gamepad logo"></p>
 <h1 align="center">vue-gamepad</h1>
 
+<p align="center">
+  <img src="https://img.shields.io/travis/com/aaronkirkham/vue-gamepad.svg" />
+  <img src="https://img.shields.io/github/size/aaronkirkham/vue-gamepad/dist/vue-gamepad.min.js.svg" />
+  <img src="https://img.shields.io/github/license/aaronkirkham/vue-gamepad.svg" />
+</p>
+
 A Vue.js plugin to add gamepad support. Bind any element to trigger a callback when a gamepad button is pressed.
 
 ## Usage

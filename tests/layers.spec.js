@@ -19,28 +19,28 @@ describe('Layers', () => {
   const wrapper = shallowMount(component);
   const gamepad = wrapper.vm.$gamepad;
 
-  test('layer history was created', () => {
+  it('created history of the previous layer', () => {
     expect(gamepad.layers).toEqual({ '1': 0 });
   })
 
-  test('on the correct layer', () => {
+  it('switched to the correct layer', () => {
     expect(gamepad.layer).toBe(1);
   })
 
-  test('highest layer has callback priority', async () => {
-    gamepad.events[gamepad.layer]['button-a'][0].callback();
-    await flushPromises();
+  // it('highest layer has callback priority', async () => {
+  //   gamepad.events[gamepad.layer]['button-a'][0].callback();
+  //   await flushPromises();
 
-    expect(wrapper.vm.happened).toBe(false);
-  })
+  //   expect(wrapper.vm.happened).toBe(false);
+  // })
 
-  test('switchToLayer', () => {
+  it('switched to the new layer', () => {
     gamepad.switchToLayer(1337);
     console.log(gamepad);
     expect(gamepad.layer).toBe(1337);
   })
 
-  test('removeLayer', () => {
+  it('removed the layer', () => {
     gamepad.removeLayer(1337);
     expect(gamepad.layer).toBe(1);
   })
