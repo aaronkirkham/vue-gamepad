@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic example</title>
+    <script src="../../node_modules/vue/dist/vue.js"></script>
+    <script src="../../dist/vue-gamepad.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <button v-gamepad:button-a="pressed">{{ text }}</button>
+    </div>
+    <script>
+      Vue.use(VueGamepad);
+
+      new Vue({
+        data: {
+          text: 'Press me!',
+          timeout: null,
+        },
+        methods: {
+          pressed() {
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => this.text = 'Press me!', 500);
+
+            this.text = 'You pressed the button!';
+          },
+        },
+      }).$mount('#app');
+    </script>
+  </body>
+</html>

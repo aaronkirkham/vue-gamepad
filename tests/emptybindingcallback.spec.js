@@ -1,25 +1,20 @@
-import Vue from 'vue';
-import VueGamepad from '../lib';
-import { shallowMount } from '@vue/test-utils';
-import flushPromises from 'flush-promises';
-
-// templates
-import EmptyBindingCallback from './templates/EmptyBindingCallback';
-
-Vue.use(VueGamepad);
-
-describe('vue-gamepad.js', () => {
-  test('was installed', () => {
-    const vm = new Vue();
-    expect(vm.$gamepad).toBeDefined();
-  })
-})
+const component = {
+  template: `<button v-gamepad:button-a @click="click">{{ text }}</button>`,
+  data: () => ({
+    text: 'not pressed',
+  }),
+  methods: {
+    click() {
+      this.text = 'pressed';
+    },
+  },
+};
 
 describe('EmptyBindingCallback', () => {
-  const wrapper = shallowMount(EmptyBindingCallback);
+  const wrapper = shallowMount(component);
   const gamepad = wrapper.vm.$gamepad;
-  const button = wrapper.find('button');
 
+  const button = wrapper.find('button');
   const directives = button.vnode.data.directives;
   const directive = directives.find(d => d.rawName === 'v-gamepad:button-a');
 
@@ -43,6 +38,11 @@ describe('EmptyBindingCallback', () => {
     gamepad.events[0]['button-a'][0].callback();
     await flushPromises();
 
-    expect(wrapper.find('h1').text()).toEqual('pressed');
+    expect(button.text()).toEqual('pressed');
+  })
+
+  test('binding was cleaned up after component was destroyed', () => {
+    wrapper.destroy();
+    expect(gamepad.events[gamepad.layer]['button-a']).toEqual([]);
   })
 })

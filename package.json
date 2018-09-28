@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "build": "node build.js && cp dist/vue-gamepad.js ~/desktop/vuetest/src/vue-gamepad/index.js",
+    "build": "node build.js",
     "test": "jest"
   },
   "repository": {
@@ -34,6 +34,7 @@
     "flush-promises": "^1.0.0",
     "jest": "^23.6.0",
     "regenerator-runtime": "^0.12.1",
+    "rollup": "^0.66.2",
     "vue": "^2.5.17",
     "vue-template-compiler": "^2.5.17"
   }

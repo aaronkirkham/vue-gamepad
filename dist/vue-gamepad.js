@@ -15,8 +15,6 @@
 
   class Gamepad {
     constructor(Vue, options) {
-      console.log(`Vue gamepad constructor`);
-
       this.pressed = new Set();
       this.events = {};
       this.layer = 0;
@@ -29,14 +27,34 @@
     }
 
     /**
+     * gamepad was connected
+     * @param {GamepadEvent} event 
+     */
+    padConnected(event) {
+      document.body.classList.add('gamepad-connected');
+    }
+
+    /**
+     * gamepad was disconnected
+     * @param {GamepadEvent} event 
+     */
+    padDisconnected(event) {
+      if (this.getGamepads().length === 0) {
+        document.body.classList.remove('gamepad-connected');
+      }
+    }
+
+    /**
      * add an event handler
-     * @param {string} action type of action on the button
+     * @param {string} action type of action on the button (pressed, released)
      * @param {string} event name of the button event
      * @param {function} callback function to trigger
      * @param {object} vnode vue directive vnode
      */
     addListener(action, event, callback, vnode = null) {
       console.log(`listening for '${event}' on layer ${this.layer}...`);
+
+      // TODO: handle action
 
       // setup the current layer if needed
       if (typeof this.events[this.layer] === 'undefined') {
@@ -46,6 +64,7 @@
 
       // register the event
       this.events[this.layer][event].push({ vnode, callback });
+      console.log(this.events[this.layer][event]);
     }
 
     /**
@@ -61,19 +80,32 @@
     }
 
     /**
-     * gamepad was connected
+     * switch to a new layer
+     * @param {*} layer 
      */
-    padConnected(event) {
-      document.body.classList.add('gamepad-connected');
+    switchToLayer(layer) {
+      if (this.layer != layer) {
+        // keep track of the old layer before we switch
+        this.layers[layer] = this.layer;
+        this.layer = layer;
+
+        console.log(`switched to layer ${this.layer}.`);
+      }
     }
 
     /**
-     * gamepad was disconnected
+     * remove a layer, delete the registered events and switch back to the old layer
+     * @param {*} layer 
      */
-    padDisconnected(event) {
-      if (this.getGamepads().length === 0) {
-        document.body.classList.remove('gamepad-connected');
-      }
+    removeLayer(layer) {
+      // switch back to the previous layer
+      this.layer = this.layers[layer];
+      delete this.layers[layer];
+
+      // delete the layer events
+      delete this.events[layer];
+
+      console.log(`switched back to layer ${this.layer}.`);
     }
 
     /**
@@ -90,15 +122,11 @@
           if (button.pressed && !this.pressed.has(name)) {
             this.pressed.add(name);
 
-            console.log(`PRESSED ${name}`);
-
             if (events.length > 0) ;
           }
           // button was released
           else if (!button.pressed && this.pressed.has(name)) {
             this.pressed.delete(name);
-
-            console.log(`RELEASED ${name}`);
 
             if (events.length > 0) {
               const event = events[events.length - 1];
@@ -122,7 +150,7 @@
 
   var index = {
     /**
-     * intall function
+     * install function
      * @param {Vue} Vue 
      * @param {object} options 
      */
@@ -130,68 +158,47 @@
       const gamepad = new Gamepad(Vue, options);
       console.log(gamepad);
 
-      Vue.prototype.$gamepad = {
-        forceLayer: (layer) => {
-          if (gamepad.layer !== layer) {
-            gamepad.layers[layer] = gamepad.layer;
-            gamepad.layer = layer;
-
-            console.log(`forcing new gamepad layer. prev: ${gamepad.layers[layer]}, new: ${layer}`);
-          }
-        },
-      };
+      Vue.prototype.$gamepad = gamepad;
 
       Vue.directive('gamepad', {
         bind: (el, binding, vnode) => {
-          if (binding.arg && BUTTON_NAMES.includes(binding.arg)) {
-
-            // TODO: modifiers -> .pressed, .released, no modifier = default to released
-            // TODO: no value => use @click handler (vnode.data.on.click)
-
+          if (binding.arg && BUTTON_NAMES.includes(binding.arg) && typeof binding.expression === 'undefined') {
             const action = binding.modifiers.pressed ? 'pressed' : 'released';
             const event = binding.arg;
-            let callback = binding.value;
-
-            console.log(action, event);
-
-            // if we didn't get a value, look for the click handler
-            if (typeof binding.value === 'undefined') {
-              console.log(`no value present. looking for @click handler`);
-              console.log(vnode.data);
-
-              callback = vnode.data.on.click;
-            }
+            let callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
 
             gamepad.addListener(action, event, callback, vnode);
-            console.log(``);
           }
           else {
-            console.error(`BIND: invalid v-gamepad binding`);
+            console.error(`vue-gamepad: invalid binding. '${binding.arg}' was not bound.`);
           }
         },
-        unbind: (el, binding) => {
-          if (binding.arg && BUTTON_NAMES.includes(binding.arg)) {
-            gamepad.removeListener(binding.arg, binding.value);
+        unbind: (el, binding, vnode) => {
+          if (binding.arg && BUTTON_NAMES.includes(binding.arg) && typeof binding.expression === 'undefined') {
+            const callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
+            gamepad.removeListener(binding.arg, callback);
           }
           else {
-            console.error(`UNBIND: invalid v-gamepad binding`);
+            console.error(`vue-gamepad: invalid binding. '${binding.arg}' was not unbound.`);
           }
         },
       });
 
-      Vue.directive('gamepad-data', {
-        bind: (el, binding, vnode) => {
-          console.log(`v-gamepad-data`);
-        },
-        unbind: (el, binding) => {
-        },
-      });
+      // Vue.directive('gamepad-data', {
+      //   bind: (el, binding, vnode) => {
+      //     console.log(`v-gamepad-data bind`);
+      //   },
+      //   unbind: (el, binding) => {
+      //     console.log(`v-gamepad-data unbind`);
+      //   },
+      // });
 
       Vue.directive('gamepad-layer', {
         bind: (el, binding, vnode) => {
-          console.log(`v-gamepad-layer`);
+          gamepad.switchToLayer(binding.value);
         },
         unbind: (el, binding) => {
+          gamepad.removeLayer(binding.value);
         },
       });
     }

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modal popup with layers</title>
+    <script src="../../node_modules/vue/dist/vue.js"></script>
+    <script src="../../dist/vue-gamepad.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #app {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 50px;
+      }
+
+      .modal-open { background-color: rgba(0, 0, 0, 0.25); }
+
+      #modal {
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        width: 400px;
+        background-color: white;
+        border: 10px solid #ffcc00;
+        padding: 25px;
+        z-index: 10;
+      }
+
+      p {
+        display: block;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" v-bind:class="{ 'modal-open': isOpen }">
+      <button v-gamepad:button-a @click="isOpen = true">Open Modal</button>
+      <div id="modal" v-if="isOpen">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec maximus at nulla quis hendrerit. Donec vel leo sit amet leo consectetur vulputate. Morbi eget fermentum risus, id posuere justo. Integer finibus diam tristique turpis lacinia sollicitudin. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
+        <button v-gamepad:button-a @click="press">{{ okText }}</button>
+        <button v-gamepad:button-b @click="close">Close</button>
+      </div>
+    </div>
+    <script>
+      Vue.use(VueGamepad);
+
+      new Vue({
+        data: {
+          isOpen: false,
+          okText: 'Ok',
+        },
+        methods: {
+          press() {
+            this.okText = 'Ok Pressed!';
+          },
+          close() {
+            this.okText = 'Ok';
+            this.isOpen = false;
+          },
+        },
+      }).$mount('#app');
+    </script>
+  </body>
+</html>
