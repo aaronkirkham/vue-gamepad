@@ -4,6 +4,8 @@
   "description": "A Vue.js plugin to add gamepad support.",
   "main": "./dist/vue-gamepad.js",
   "directories": {
+    "dist": "dist",
+    "examples": "examples",
     "lib": "lib",
     "test": "test"
   },

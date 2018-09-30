@@ -2,17 +2,16 @@ jest.spyOn(global.console, 'log').mockImplementation(jest.fn);
 jest.spyOn(global.console, 'warn').mockImplementation(jest.fn);
 jest.spyOn(global.console, 'error').mockImplementation(jest.fn);
 
-import Vue from 'vue';
-import VueGamepad from '../lib';
+const Vue = require('vue');
+const VueGamepad = require('vue-gamepad');
+const utils = require('@vue/test-utils');
+const flushPromises = require('flush-promises');
 
 Vue.use(VueGamepad);
 
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import flushPromises from 'flush-promises';
-
 global.Vue = Vue;
 global.VueGamepad = VueGamepad;
-global.createLocalVue = createLocalVue;
-global.shallowMount = shallowMount;
+global.createLocalVue = utils.createLocalVue;
+global.shallowMount = utils.shallowMount;
 global.flushPromises = flushPromises;
 navigator.getGamepads = () => [];
