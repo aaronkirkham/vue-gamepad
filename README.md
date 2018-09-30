@@ -9,25 +9,33 @@
 
 A Vue.js plugin to add gamepad support. Bind any element to trigger a callback when a gamepad button is pressed.
 
+## Installation
+### npm/yarn
+```bash
+$ npm/yarn install vue-gamepad
+```
+
+### CDN
+https://unpkg.com/vue-gamepad/dist/vue-gamepad.min.js
+
 ## Usage
-entry.js
+Tell Vue to use the plugin
 ```js
 import Vue from 'vue';
-import App from './App.vue';
 import VueGamepad from 'vue-gamepad';
 
 Vue.use(VueGamepad);
 ```
 
-App.vue template:
+Example usage inside templates:
 ```html
 <button v-gamepad:button-a="callback">Press me!</button>
 ```
 
-## Options
+## Constructor Options
 |key|description|default|type|
 |:---|---|---|---|
-|`buttonMapping`|list of strings containing button indices|[Map](lib/gamepad.js#L1)|`Array`|
+|`buttonMapping`|list of strings containing button indices|[Mapping](lib/default-button-mapping.js)|`Array`|
 |`injectClasses`|add classes to elements which have a gamepad binding|`true`|`Boolean`|
 |`silent`|suppress debug info|`true`|`Boolean`|
 
@@ -35,8 +43,4 @@ App.vue template:
 TODO
 
 ## License
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
