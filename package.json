@@ -22,7 +22,7 @@
     "javascript",
     "gamepad"
   ],
-  "author": "Aaron Kirkham",
+  "author": "Aaron Kirkham <aaron@kirkh.am>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/aaronkirkham/vue-gamepad/issues"
@@ -39,7 +39,8 @@
     "regenerator-runtime": "^0.12.1",
     "rollup": "^0.66.2",
     "rollup-plugin-babel": "^4.0.3",
-    "uglify-js": "^3.4.9",
+    "rollup-plugin-cleanup": "^3.0.0",
+    "rollup-plugin-uglify": "^6.0.0",
     "vue": "^2.5.17",
     "vue-template-compiler": "^2.5.17"
   }
