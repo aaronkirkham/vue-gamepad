@@ -61,7 +61,7 @@
   }
 
   /**
-   * helper function to build all properties like lodash's _.set function
+   * helper function to build all nested properties similar to lodash's _.set function
    * 
    * set(object, ['x', 'y', 'z'], 'default')
    * console.log(object.x.y.z);
@@ -85,14 +85,14 @@
     return obj;
   }
   /**
-   * helper function to get value from a nest object like lodash's ._get function
+   * helper function to get value from a nest object similar to lodash's ._get function
    * 
-   * get({ x: { y: 0 } }, ['x', 'y', 'z'], undefined)
-   * => undefined
+   * get({ x: { y: 0 } }, ['x', 'y', 'z'], [])
+   * => []
    * 
    * @param {object} obj object to get properties from
    * @param {array} keys list of keys to use
-   * @param {any} (optional) def default value if nothing was found
+   * @param {any} [def=undefined] default value if nothing was found
    */
 
   function get(obj, keys) {
@@ -107,6 +107,26 @@
     return tmp || def;
   }
 
+  var ButtonNames = ['button-a', 'button-b', 'button-x', 'button-y', 'shoulder-left', 'shoulder-right', 'trigger-left', 'trigger-right', 'button-select', 'button-start', 'left-stick-in', 'right-stick-in', 'button-dpad-up', 'button-dpad-down', 'button-dpad-left', 'button-dpad-right', 'vendor'];
+  /**
+   * get name of axis from input value
+   * @param {number} axis axis id
+   * @param {number} value current input value
+   * @param {number} [threshold=1] dead zone of the analog
+   */
+
+  function getAxisName(axis, value) {
+    var threshold = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+
+    if (value >= threshold) {
+      if (axis === 0) return 'left-analog-right';else if (axis === 1) return 'left-analog-down';else if (axis === 2) return 'right-analog-right';else if (axis === 3) return 'right-analog-down';
+    } else if (value <= -threshold) {
+      if (axis === 0) return 'left-analog-left';else if (axis === 1) return 'left-analog-up';else if (axis === 2) return 'right-analog-left';else if (axis === 3) return 'right-analog-up';
+    }
+
+    return undefined;
+  }
+
   function GamepadFactory (Vue) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     return (
@@ -115,11 +135,10 @@
         function Gamepad() {
           _classCallCheck(this, Gamepad);
 
-          this.pressed = new Set();
+          this.holding = {};
           this.events = {};
           this.layer = 0;
           this.layers = {};
-          this.holding = {};
           window.addEventListener('gamepadconnected', this.padConnected.bind(this));
           window.addEventListener('gamepaddisconnected', this.padDisconnected.bind(this));
           this.animationFrame = requestAnimationFrame(this.run.bind(this));
@@ -149,46 +168,70 @@
           }
           /**
            * add an event handler
-           * @param {string} action type of action on the button (pressed, released)
            * @param {string} event name of the button event
+           * @param {object} modifiers vue binding modifiers
            * @param {function} callback function to trigger
            * @param {object} vnode vue directive vnode
            */
 
         }, {
           key: "addListener",
-          value: function addListener(action, event, callback) {
+          value: function addListener(event, modifiers, callback) {
             var vnode = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-            console.log("listening for '".concat(action, "' '").concat(event, "' on layer ").concat(this.layer, "...")); // register the event
+            var action = modifiers.released ? 'released' : 'pressed';
+            var repeat = !!modifiers.repeat;
+            this.debug("listening for '".concat(event, "' '").concat(action, "' (repeat? ").concat(repeat, ") on layer ").concat(this.layer, "...")); // if we don't already have an array initialised for the current event
+            // do it now
 
-            set$1(this.events, [this.layer, action, event], []);
+            var events = get(this.events, [this.layer, action, event], []);
+
+            if (events.length === 0) {
+              set$1(this.events, [this.layer, action, event], []);
+            } // register the event
+
+
             this.events[this.layer][action][event].push({
               vnode: vnode,
+              repeat: repeat,
               callback: callback
-            });
+            }); // inject classes
+
+            if (options.injectClasses && vnode && vnode.elm) {
+              vnode.elm.classList.add('v-gamepad', "v-gamepad--".concat(event));
+            }
           }
           /**
            * remove an event handler
-           * @param {string} action type of action on the button (pressed, released)
            * @param {string} event name of the button event
+           * @param {object} modifiers vue binding modifiers
            * @param {function} callback trigger function
            */
 
         }, {
           key: "removeListener",
-          value: function removeListener(action, event, callback) {
-            console.log("removing listener for '".concat(event, "' on layer ").concat(this.layer, "..."));
-            var events = get(this.events, [this.layer, action], []);
+          value: function removeListener(event, modifiers, callback) {
+            var action = modifiers.released ? 'released' : 'pressed';
+            this.debug("removing listener for '".concat(event, "' '").concat(action, "' on layer ").concat(this.layer, "...")); // get a list of all events for the current action
+
+            var events = get(this.events, [this.layer, action, event], []);
 
             if (events.length > 0) {
-              events[event] = events[event].filter(function (e) {
-                return e.callback !== callback;
-              });
+              // filter any events which have same callback
+              events = events.filter(function (event) {
+                return event.callback !== callback;
+              }); // if we have any remaining events after the filter, update the array
+              // otherwise delete the object
+
+              if (events.length > 0) {
+                set$1(this.events, [this.layer, action, event], events);
+              } else {
+                delete this.events[this.layer][action][event];
+              }
             }
           }
           /**
            * switch to a new layer
-           * @param {*} layer 
+           * @param {number} layer layer number to switch to
            */
 
         }, {
@@ -198,12 +241,12 @@
               // keep track of the old layer before we switch
               this.layers[layer] = this.layer;
               this.layer = layer;
-              console.log("switched to layer ".concat(this.layer, "."));
+              this.debug("switched to layer ".concat(this.layer, "."));
             }
           }
           /**
            * remove a layer, delete the registered events and switch back to the old layer
-           * @param {*} layer 
+           * @param {number} layer layer number to remove
            */
 
         }, {
@@ -214,7 +257,7 @@
             delete this.layers[layer]; // delete the layer events
 
             delete this.events[layer];
-            console.log("switched back to layer ".concat(this.layer, "."));
+            this.debug("switched back to layer ".concat(this.layer, "."));
           }
           /**
            * main loop
@@ -234,42 +277,44 @@
                   var now = Date.now();
                   var events = get(_this.events, [_this.layer, 'pressed', name], []);
 
-                  if (!_this.pressed.has(name)) {
-                    _this.pressed.add(name);
+                  if (events.length > 0) {
+                    var event = events[events.length - 1]; // button was just pressed, or is repeating
 
-                    _this.holding[name] = now;
-
-                    if (events.length > 0) {
-                      var event = events[events.length - 1];
+                    if (typeof _this.holding[name] === 'undefined' || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
+                      _this.holding[name] = now;
                       event.callback.call();
                     }
-                  } // button is being held
-                  else if (now - _this.holding[name] >= options.buttonRepeatTimeout) {
-                      _this.holding[name] = now;
-
-                      if (events.length > 0) {
-                        var _event = events[events.length - 1];
-
-                        _event.callback.call();
-                      }
-                    }
+                  }
                 } // button was released
-                else if (!button.pressed && _this.pressed.has(name)) {
-                    _this.pressed.delete(name);
-
+                else if (!button.pressed && typeof _this.holding[name] !== 'undefined') {
                     delete _this.holding[name];
 
                     var _events = get(_this.events, [_this.layer, 'released', name], []);
 
                     if (_events.length > 0) {
-                      var _event2 = _events[_events.length - 1];
+                      var _event = _events[_events.length - 1];
 
-                      _event2.callback.call();
+                      _event.callback.call();
                     }
                   }
               }); // check gamepad axis
 
-              pad.axes.forEach(function (axis, index) {});
+              pad.axes.forEach(function (value, index) {
+                if (value >= options.analogThreshold || value <= -options.analogThreshold) {
+                  var name = getAxisName(index, value, options.analogThreshold);
+                  var events = get(_this.events, [_this.layer, 'pressed', name], []);
+
+                  if (events.length > 0) {
+                    var event = events[events.length - 1];
+                    var now = Date.now(); // axis was just moved, or is repeating
+
+                    if (typeof _this.holding[name] === 'undefined' || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
+                      _this.holding[name] = now;
+                      event.callback.call();
+                    }
+                  }
+                }
+              });
             });
             this.animationFrame = requestAnimationFrame(this.run.bind(this));
           }
@@ -288,12 +333,37 @@
           /**
            * helper function to test if a binding is valid
            * @param {object} binding binding to test which includes arg & value
+           * @return {boolean}
            */
 
         }, {
           key: "isValidBinding",
           value: function isValidBinding(binding) {
-            return typeof binding.arg !== 'undefined' && options.buttonNames.includes(binding.arg) && (typeof binding.value === 'function' || typeof binding.value === 'undefined' && typeof binding.expression === 'undefined');
+            return typeof binding.arg !== 'undefined' && (typeof binding.value === 'function' || typeof binding.value === 'undefined' && typeof binding.expression === 'undefined');
+          }
+        }, {
+          key: "debug",
+          value: function debug() {
+            if (!options.silent) {
+              var _console;
+
+              for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+              }
+
+              (_console = console).log.apply(_console, ['%cvue-gamepad', 'background:#fc0;color:#000'].concat(args));
+            }
+          }
+        }, {
+          key: "error",
+          value: function error() {
+            var _console2;
+
+            for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+              args[_key2] = arguments[_key2];
+            }
+
+            (_console2 = console).error.apply(_console2, ['%cvue-gamepad', 'background:#fc0;color:#000'].concat(args));
           }
         }]);
 
@@ -301,8 +371,6 @@
       }()
     );
   }
-
-  var DefaultButtonMapping = ['button-a', 'button-b', 'button-x', 'button-y', 'shoulder-left', 'shoulder-right', 'trigger-left', 'trigger-right', 'button-select', 'button-start', 'left-stick-in', 'right-stick-in', 'button-dpad-up', 'button-dpad-down', 'button-dpad-left', 'button-dpad-right', 'vendor'];
 
   var index = {
     /**
@@ -312,9 +380,18 @@
      */
     install: function install(Vue) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      // we need basic gamepad api support to work
+      if (!('getGamepads' in navigator)) {
+        console.error("vue-gamepad: your browser does not support the Gamepad API!");
+        console.error("vue-gamepad: see https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API/Using_the_Gamepad_API#Browser_compatibility");
+        return false;
+      }
+
       var DefaultOptions = {
-        buttonNames: DefaultButtonMapping,
-        buttonRepeatTimeout: 250,
+        analogThreshold: 0.5,
+        buttonNames: ButtonNames,
+        buttonRepeatTimeout: 200,
         injectClasses: true,
         silent: true
       };
@@ -324,39 +401,27 @@
       Vue.directive('gamepad', {
         bind: function bind(el, binding, vnode) {
           if (gamepad.isValidBinding(binding)) {
-            console.log(binding.modifiers);
-            var action = binding.modifiers.released ? 'released' : 'pressed';
-            var event = binding.arg;
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
-            gamepad.addListener(action, event, callback, vnode);
+            gamepad.addListener(binding.arg, binding.modifiers, callback, vnode);
           } else {
-            console.error("vue-gamepad: invalid binding. '".concat(binding.arg, "' was not bound."));
+            gamepad.error("invalid binding. '".concat(binding.arg, "' was not bound."));
           }
         },
         unbind: function unbind(el, binding, vnode) {
           if (gamepad.isValidBinding(binding)) {
-            var action = binding.modifiers.released ? 'released' : 'pressed';
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
-            gamepad.removeListener(action, binding.arg, callback);
+            gamepad.removeListener(binding.arg, binding.modifiers, callback);
           } else {
-            console.error("vue-gamepad: invalid binding. '".concat(binding.arg, "' was not unbound."));
+            gamepad.error("invalid binding. '".concat(binding.arg, "' was not unbound."));
           }
         }
-      }); // Vue.directive('gamepad-data', {
-      //   bind: (el, binding, vnode) => {
-      //     console.log(`v-gamepad-data bind`);
-      //   },
-      //   unbind: (el, binding) => {
-      //     console.log(`v-gamepad-data unbind`);
-      //   },
-      // });
-
+      });
       Vue.directive('gamepad-layer', {
         bind: function bind(el, binding, vnode) {
-          gamepad.switchToLayer(binding.value);
+          return gamepad.switchToLayer(binding.value);
         },
         unbind: function unbind(el, binding) {
-          gamepad.removeLayer(binding.value);
+          return gamepad.removeLayer(binding.value);
         }
       });
     }

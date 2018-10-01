@@ -26,7 +26,10 @@
   </head>
   <body>
     <div id="app">
-      <ul v-if="test" v-gamepad:button-dpad-up="up" v-gamepad:button-dpad-down="down">
+      <ul v-gamepad:button-dpad-up.repeat="up"
+          v-gamepad:button-dpad-down.repeat="down"
+          v-gamepad:left-analog-up.repeat="up"
+          v-gamepad:left-analog-down.repeat="down">
         <li v-for="(option, idx) in options" v-bind:class="{ 'selected': selected === idx }">{{ option }}</li>
       </ul>
     </div>

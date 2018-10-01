@@ -39,7 +39,7 @@ async function build() {
 
     const size = await minify(code);
 
-    console.log(`Built. Size=${(code.length / 1024).toFixed(2)}kb, Minified=${(size / 1024).toFixed(2)}kb.`);
+    console.log(`🎉 Built. Size=${(code.length / 1024).toFixed(2)}kb, Minified=${(size / 1024).toFixed(2)}kb.`);
   } catch (e) {
     console.error(e);
   }

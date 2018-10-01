@@ -7,11 +7,11 @@ const VueGamepad = require('vue-gamepad');
 const utils = require('@vue/test-utils');
 const flushPromises = require('flush-promises');
 
-Vue.use(VueGamepad);
-
 global.Vue = Vue;
 global.VueGamepad = VueGamepad;
 global.createLocalVue = utils.createLocalVue;
 global.shallowMount = utils.shallowMount;
 global.flushPromises = flushPromises;
 navigator.getGamepads = () => [];
+
+Vue.use(VueGamepad);

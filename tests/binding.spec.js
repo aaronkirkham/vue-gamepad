@@ -30,6 +30,6 @@ describe('Binding', () => {
     const wrapper = shallowMount({ vm, template: `<button v-gamepad:button-a @click="click"></button>` });
     const gamepad = wrapper.vm.$gamepad;
 
-    expect(gamepad.events[0]['button-a'][0].callback).toEqual(wrapper.find('button').vnode.data.on.click);
+    expect(gamepad.events[0]['pressed']['button-a'][0].callback).toEqual(wrapper.find('button').vnode.data.on.click);
   })
 })

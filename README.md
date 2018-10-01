@@ -33,14 +33,20 @@ Example usage inside templates:
 ```
 
 ## Constructor Options
-|key|description|default|type|
+|Key|Description|Default|Type|
 |:---|---|---|---|
-|`buttonMapping`|list of strings containing button indices|[Mapping](lib/default-button-mapping.js)|`Array`|
-|`injectClasses`|add classes to elements which have a gamepad binding|`true`|`Boolean`|
-|`silent`|suppress debug info|`true`|`Boolean`|
+|`analogThreshold`|Threshold before analog events are triggered. Low values may cause false positives|`0.5`|`Number`|
+|`buttonMapping`|List of strings containing button indices|[Mapping](lib/button-mapping.js#L1)|`Array`|
+|`buttonRepeatTimeout`|Time (in milliseconds) until the repeat event is triggered when holding a button|`200`|`Number`|
+|`injectClasses`|Add classes to elements which have a gamepad binding|`true`|`Boolean`|
+|`silent`|Suppress debug info|`true`|`Boolean`|
 
-## Methods
-TODO
+## Directives
+- `v-gamepad` - Bind an element to a gamepad action which will fire a callback
+  - `released` modifier - Only fire the callback when the button is released
+  - `repeat` modifier - Repeatedly fire the callback when the button is held
+- ~~`v-gamepad-layer` - TODO~~
+- ~~`v-gamepad-json` - Pass a raw object of buttons, actions and callbacks to bind~~
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
