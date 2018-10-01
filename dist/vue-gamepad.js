@@ -60,6 +60,53 @@
     return target;
   }
 
+  /**
+   * helper function to build all properties like lodash's _.set function
+   * 
+   * set(object, ['x', 'y', 'z'], 'default')
+   * console.log(object.x.y.z);
+   *  => default
+   * 
+   * @param {object} obj object to build properties for
+   * @param {array} keys list of keys to nest
+   * @param {any} value value to set
+   */
+  function set$1(obj, keys, value) {
+    obj[keys[0]] = obj[keys[0]] || {};
+    var tmp = obj[keys[0]];
+
+    if (keys.length > 1) {
+      keys.shift();
+      set$1(tmp, keys, value);
+    } else {
+      obj[keys[0]] = value;
+    }
+
+    return obj;
+  }
+  /**
+   * helper function to get value from a nest object like lodash's ._get function
+   * 
+   * get({ x: { y: 0 } }, ['x', 'y', 'z'], undefined)
+   * => undefined
+   * 
+   * @param {object} obj object to get properties from
+   * @param {array} keys list of keys to use
+   * @param {any} (optional) def default value if nothing was found
+   */
+
+  function get(obj, keys) {
+    var def = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+    var tmp = obj[keys[0]];
+
+    if (keys.length > 1 && tmp) {
+      keys.shift();
+      return get(tmp, keys) || def;
+    }
+
+    return tmp || def;
+  }
+
   function GamepadFactory (Vue) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     return (
@@ -72,6 +119,7 @@
           this.events = {};
           this.layer = 0;
           this.layers = {};
+          this.holding = {};
           window.addEventListener('gamepadconnected', this.padConnected.bind(this));
           window.addEventListener('gamepaddisconnected', this.padDisconnected.bind(this));
           this.animationFrame = requestAnimationFrame(this.run.bind(this));
@@ -110,40 +158,33 @@
         }, {
           key: "addListener",
           value: function addListener(action, event, callback) {
-            var _this = this;
-
             var vnode = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-            console.log("listening for '".concat(event, "' on layer ").concat(this.layer, "...")); // TODO: handle action
-            // setup the current layer if needed
+            console.log("listening for '".concat(action, "' '").concat(event, "' on layer ").concat(this.layer, "...")); // register the event
 
-            if (typeof this.events[this.layer] === 'undefined') {
-              this.events[this.layer] = {};
-              options.buttonNames.forEach(function (b) {
-                return _this.events[_this.layer][b] = [];
-              });
-            } // register the event
-
-
-            this.events[this.layer][event].push({
+            set$1(this.events, [this.layer, action, event], []);
+            this.events[this.layer][action][event].push({
               vnode: vnode,
               callback: callback
             });
-            console.log(this.events[this.layer][event]);
           }
           /**
            * remove an event handler
+           * @param {string} action type of action on the button (pressed, released)
            * @param {string} event name of the button event
            * @param {function} callback trigger function
            */
 
         }, {
           key: "removeListener",
-          value: function removeListener(event, callback) {
+          value: function removeListener(action, event, callback) {
             console.log("removing listener for '".concat(event, "' on layer ").concat(this.layer, "..."));
-            var events = this.events[this.layer];
-            events[event] = events[event].filter(function (e) {
-              return e.callback !== callback;
-            });
+            var events = get(this.events, [this.layer, action], []);
+
+            if (events.length > 0) {
+              events[event] = events[event].filter(function (e) {
+                return e.callback !== callback;
+              });
+            }
           }
           /**
            * switch to a new layer
@@ -182,28 +223,53 @@
         }, {
           key: "run",
           value: function run() {
-            var _this2 = this;
+            var _this = this;
 
             this.getGamepads().forEach(function (pad) {
               // check gamepad buttons
               pad.buttons.forEach(function (button, index) {
-                var name = options.buttonNames[index];
-                var events = _this2.events[_this2.layer][name]; // button is pressed
+                var name = options.buttonNames[index]; // button is pressed
 
-                if (button.pressed && !_this2.pressed.has(name)) {
-                  _this2.pressed.add(name);
+                if (button.pressed) {
+                  var now = Date.now();
+                  var events = get(_this.events, [_this.layer, 'pressed', name], []);
 
-                  if (events.length > 0) ;
-                } // button was released
-                else if (!button.pressed && _this2.pressed.has(name)) {
-                    _this2.pressed.delete(name);
+                  if (!_this.pressed.has(name)) {
+                    _this.pressed.add(name);
+
+                    _this.holding[name] = now;
 
                     if (events.length > 0) {
                       var event = events[events.length - 1];
                       event.callback.call();
                     }
+                  } // button is being held
+                  else if (now - _this.holding[name] >= options.buttonRepeatTimeout) {
+                      _this.holding[name] = now;
+
+                      if (events.length > 0) {
+                        var _event = events[events.length - 1];
+
+                        _event.callback.call();
+                      }
+                    }
+                } // button was released
+                else if (!button.pressed && _this.pressed.has(name)) {
+                    _this.pressed.delete(name);
+
+                    delete _this.holding[name];
+
+                    var _events = get(_this.events, [_this.layer, 'released', name], []);
+
+                    if (_events.length > 0) {
+                      var _event2 = _events[_events.length - 1];
+
+                      _event2.callback.call();
+                    }
                   }
-              });
+              }); // check gamepad axis
+
+              pad.axes.forEach(function (axis, index) {});
             });
             this.animationFrame = requestAnimationFrame(this.run.bind(this));
           }
@@ -248,6 +314,7 @@
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var DefaultOptions = {
         buttonNames: DefaultButtonMapping,
+        buttonRepeatTimeout: 250,
         injectClasses: true,
         silent: true
       };
@@ -257,7 +324,8 @@
       Vue.directive('gamepad', {
         bind: function bind(el, binding, vnode) {
           if (gamepad.isValidBinding(binding)) {
-            var action = binding.modifiers.pressed ? 'pressed' : 'released';
+            console.log(binding.modifiers);
+            var action = binding.modifiers.released ? 'released' : 'pressed';
             var event = binding.arg;
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
             gamepad.addListener(action, event, callback, vnode);
@@ -267,8 +335,9 @@
         },
         unbind: function unbind(el, binding, vnode) {
           if (gamepad.isValidBinding(binding)) {
+            var action = binding.modifiers.released ? 'released' : 'pressed';
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
-            gamepad.removeListener(binding.arg, callback);
+            gamepad.removeListener(action, binding.arg, callback);
           } else {
             console.error("vue-gamepad: invalid binding. '".concat(binding.arg, "' was not unbound."));
           }
