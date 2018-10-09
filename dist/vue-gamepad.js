@@ -87,14 +87,14 @@
   }
 
   var ButtonNames = ['button-a', 'button-b', 'button-x', 'button-y', 'shoulder-left', 'shoulder-right', 'trigger-left', 'trigger-right', 'button-select', 'button-start', 'left-stick-in', 'right-stick-in', 'button-dpad-up', 'button-dpad-down', 'button-dpad-left', 'button-dpad-right', 'vendor'];
-  function getAxisName(axis, value) {
-    var threshold = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
-    if (value >= threshold) {
-      if (axis === 0) return 'left-analog-right';else if (axis === 1) return 'left-analog-down';else if (axis === 2) return 'right-analog-right';else if (axis === 3) return 'right-analog-down';
-    } else if (value <= -threshold) {
-      if (axis === 0) return 'left-analog-left';else if (axis === 1) return 'left-analog-up';else if (axis === 2) return 'right-analog-left';else if (axis === 3) return 'right-analog-up';
-    }
+  var PositiveAxisNames = ['left-analog-right', 'left-analog-down', 'right-analog-right', 'right-analog-down'];
+  var NegativeAxisNames = ['left-analog-left', 'left-analog-up', 'right-analog-left', 'right-analog-up'];
+  function getAxisNameFromValue(axis, value) {
+    if (value > 0) return PositiveAxisNames[axis];else if (value < 0) return NegativeAxisNames[axis];
     return undefined;
+  }
+  function getAxisNames(axis) {
+    return [PositiveAxisNames[axis], NegativeAxisNames[axis]];
   }
 
   function GamepadFactory (Vue) {
@@ -206,7 +206,7 @@
               });
               pad.axes.forEach(function (value, index) {
                 if (value >= options.analogThreshold || value <= -options.analogThreshold) {
-                  var name = getAxisName(index, value, options.analogThreshold);
+                  var name = getAxisNameFromValue(index, value);
                   var events = get(_this.events, [_this.layer, 'pressed', name], []);
                   if (events.length > 0) {
                     var event = events[events.length - 1];
@@ -216,6 +216,18 @@
                       event.callback.call();
                     }
                   }
+                } else {
+                  var names = getAxisNames(index);
+                  names.filter(function (name) {
+                    return _this.holding[name];
+                  }).forEach(function (name) {
+                    delete _this.holding[name];
+                    var events = get(_this.events, [_this.layer, 'released', name], []);
+                    if (events.length > 0) {
+                      var _event2 = events[events.length - 1];
+                      _event2.callback.call();
+                    }
+                  });
                 }
               });
             });
