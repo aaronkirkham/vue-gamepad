@@ -1,3 +1,5 @@
+import { shallowMount } from '@vue/test-utils';
+
 const component = {
   template: `
     <div v-gamepad:button-a="should_not_happen">

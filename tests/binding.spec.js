@@ -1,3 +1,5 @@
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+
 describe('Binding', () => {
   it('does not allow invalid bindings', () => {
     const wrapper = shallowMount({});
