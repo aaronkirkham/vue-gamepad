@@ -42,11 +42,11 @@
   </head>
   <body>
     <div id="app" v-bind:class="{ 'modal-open': isOpen }">
-      <button v-gamepad:button-a @click="isOpen = true">Open Modal</button>
+      <button v-gamepad:button-a @click="isOpen = true">Open Modal (A)</button>
       <div id="modal" v-if="isOpen">
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec maximus at nulla quis hendrerit. Donec vel leo sit amet leo consectetur vulputate. Morbi eget fermentum risus, id posuere justo. Integer finibus diam tristique turpis lacinia sollicitudin. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-        <button v-gamepad:button-a @click="press">{{ okText }}</button>
-        <button v-gamepad:button-b @click="close">Close</button>
+        <button v-gamepad:button-a @click="press">{{ okText }} (A)</button>
+        <button v-gamepad:button-b @click="close">Close (B)</button>
       </div>
     </div>
     <script>

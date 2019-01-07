@@ -3,4 +3,4 @@ module.exports = {
     '<rootDir>/tests/setup.js',
   ],
   verbose: true,
-}
+};

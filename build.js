@@ -3,12 +3,12 @@ const rollup = require('rollup');
 const babel = require('rollup-plugin-babel');
 const cleanup = require('rollup-plugin-cleanup');
 const uglify = require('rollup-plugin-uglify');
-const package = require('./package.json');
+const pkg = require('./package.json');
 
 const banner = `/*!
- * ${package.name} v${package.version}
- * (c) ${new Date().getFullYear()} ${package.author}
- * Released under the ${package.license} License.
+ * ${pkg.name} v${pkg.version}
+ * (c) ${new Date().getFullYear()} ${pkg.author}
+ * Released under the ${pkg.license} License.
  */`;
 
 async function build(minify = false) {
@@ -25,17 +25,17 @@ async function build(minify = false) {
       ],
     });
 
-    const { code } = await bundle.write({
+    await bundle.write({
       file: `./dist/${filename}`,
       format: 'umd',
       name: 'VueGamepad',
       sourcemap: true,
-      banner
+      banner,
     });
 
-    console.log(`🎉 Built '${filename}' (${(code.length / 1024).toFixed(2)}kb)`);
+    console.log(`🎉  Built '${filename}'`);
   } catch (error) {
-    console.error(`😭 Failed to build! Error: ${error.message}`);
+    console.error(`😭  Failed to build! Error: ${error.message}`);
   }
 }
 

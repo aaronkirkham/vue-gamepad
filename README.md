@@ -41,7 +41,6 @@ Example usage inside templates:
 |`buttonMapping`|List of strings containing button indices|[Mapping](lib/button-mapping.js#L1)|`Array`|
 |`buttonRepeatTimeout`|Time (in milliseconds) until the repeat event is triggered when holding a button|`200`|`Number`|
 |`injectClasses`|Add classes to elements which have a gamepad binding|`true`|`Boolean`|
-|`silent`|Suppress debug info|`true`|`Boolean`|
 
 ## Directives
 - `v-gamepad` - Bind an element to a gamepad action which will fire a callback

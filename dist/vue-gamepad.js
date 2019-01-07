@@ -1,13 +1,13 @@
 /*!
- * vue-gamepad v1.0.0
- * (c) 2018 Aaron Kirkham <aaron@kirkh.am>
+ * vue-gamepad v1.0.1
+ * (c) 2019 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global.VueGamepad = factory());
-}(this, (function () { 'use strict';
+  (global = global || self, global.VueGamepad = factory());
+}(this, function () { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -90,8 +90,8 @@
   var PositiveAxisNames = ['left-analog-right', 'left-analog-down', 'right-analog-right', 'right-analog-down'];
   var NegativeAxisNames = ['left-analog-left', 'left-analog-up', 'right-analog-left', 'right-analog-up'];
   function getAxisNameFromValue(axis, value) {
-    if (value > 0) return PositiveAxisNames[axis];else if (value < 0) return NegativeAxisNames[axis];
-    return undefined;
+    if (value > 0) return PositiveAxisNames[axis];
+    return NegativeAxisNames[axis];
   }
   function getAxisNames(axis) {
     return [PositiveAxisNames[axis], NegativeAxisNames[axis]];
@@ -113,12 +113,12 @@
         }
         _createClass(Gamepad, [{
           key: "padConnected",
-          value: function padConnected(event) {
+          value: function padConnected() {
             document.body.classList.add('gamepad-connected');
           }
         }, {
           key: "padDisconnected",
-          value: function padDisconnected(event) {
+          value: function padDisconnected() {
             if (this.getGamepads().length === 0) {
               document.body.classList.remove('gamepad-connected');
             }
@@ -129,7 +129,6 @@
             var vnode = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
             var action = modifiers.released ? 'released' : 'pressed';
             var repeat = !!modifiers.repeat;
-            this.debug("listening for '".concat(event, "' '").concat(action, "' (repeat? ").concat(repeat, ") on layer ").concat(this.layer, "..."));
             var events = get(this.events, [this.layer, action, event], []);
             if (events.length === 0) {
               set$1(this.events, [this.layer, action, event], []);
@@ -147,11 +146,10 @@
           key: "removeListener",
           value: function removeListener(event, modifiers, callback) {
             var action = modifiers.released ? 'released' : 'pressed';
-            this.debug("removing listener for '".concat(event, "' '").concat(action, "' on layer ").concat(this.layer, "..."));
             var events = get(this.events, [this.layer, action, event], []);
             if (events.length > 0) {
-              events = events.filter(function (event) {
-                return event.callback !== callback;
+              events = events.filter(function (e) {
+                return e.callback !== callback;
               });
               if (events.length > 0) {
                 set$1(this.events, [this.layer, action, event], events);
@@ -163,10 +161,9 @@
         }, {
           key: "switchToLayer",
           value: function switchToLayer(layer) {
-            if (this.layer != layer) {
+            if (this.layer !== layer) {
               this.layers[layer] = this.layer;
               this.layer = layer;
-              this.debug("switched to layer ".concat(this.layer, "."));
             }
           }
         }, {
@@ -175,7 +172,6 @@
             this.layer = this.layers[layer];
             delete this.layers[layer];
             delete this.events[layer];
-            this.debug("switched back to layer ".concat(this.layer, "."));
           }
         }, {
           key: "run",
@@ -194,15 +190,14 @@
                       event.callback.call();
                     }
                   }
-                }
-                else if (!button.pressed && typeof _this.holding[name] !== 'undefined') {
-                    delete _this.holding[name];
-                    var _events = get(_this.events, [_this.layer, 'released', name], []);
-                    if (_events.length > 0) {
-                      var _event = _events[_events.length - 1];
-                      _event.callback.call();
-                    }
+                } else if (!button.pressed && typeof _this.holding[name] !== 'undefined') {
+                  delete _this.holding[name];
+                  var _events = get(_this.events, [_this.layer, 'released', name], []);
+                  if (_events.length > 0) {
+                    var _event = _events[_events.length - 1];
+                    _event.callback.call();
                   }
+                }
               });
               pad.axes.forEach(function (value, index) {
                 if (value >= options.analogThreshold || value <= -options.analogThreshold) {
@@ -245,26 +240,6 @@
           value: function isValidBinding(binding) {
             return typeof binding.arg !== 'undefined' && (typeof binding.value === 'function' || typeof binding.value === 'undefined' && typeof binding.expression === 'undefined');
           }
-        }, {
-          key: "debug",
-          value: function debug() {
-            if (!options.silent) {
-              var _console;
-              for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
-                args[_key] = arguments[_key];
-              }
-              (_console = console).log.apply(_console, ['%cvue-gamepad', 'background:#fc0;color:#000'].concat(args));
-            }
-          }
-        }, {
-          key: "error",
-          value: function error() {
-            var _console2;
-            for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-              args[_key2] = arguments[_key2];
-            }
-            (_console2 = console).error.apply(_console2, ['%cvue-gamepad', 'background:#fc0;color:#000'].concat(args));
-          }
         }]);
         return Gamepad;
       }()
@@ -275,15 +250,14 @@
     install: function install(Vue) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       if (!('getGamepads' in navigator)) {
-        console.error("vue-gamepad: your browser does not support the Gamepad API!");
-        return false;
+        console.error('vue-gamepad: your browser does not support the Gamepad API!');
+        return;
       }
       var DefaultOptions = {
         analogThreshold: 0.5,
         buttonNames: ButtonNames,
         buttonRepeatTimeout: 200,
-        injectClasses: true,
-        silent: true
+        injectClasses: true
       };
       var Gamepad = GamepadFactory(Vue, _objectSpread({}, DefaultOptions, options));
       var gamepad = new Gamepad();
@@ -294,7 +268,7 @@
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
             gamepad.addListener(binding.arg, binding.modifiers, callback, vnode);
           } else {
-            gamepad.error("invalid binding. '".concat(binding.arg, "' was not bound."));
+            console.error("invalid binding. '".concat(binding.arg, "' was not bound."));
           }
         },
         unbind: function unbind(el, binding, vnode) {
@@ -302,12 +276,12 @@
             var callback = typeof binding.value !== 'undefined' ? binding.value : vnode.data.on.click;
             gamepad.removeListener(binding.arg, binding.modifiers, callback);
           } else {
-            gamepad.error("invalid binding. '".concat(binding.arg, "' was not unbound."));
+            console.error("invalid binding. '".concat(binding.arg, "' was not unbound."));
           }
         }
       });
       Vue.directive('gamepad-layer', {
-        bind: function bind(el, binding, vnode) {
+        bind: function bind(el, binding) {
           return gamepad.switchToLayer(binding.value);
         },
         unbind: function unbind(el, binding) {
@@ -319,5 +293,5 @@
 
   return index;
 
-})));
+}));
 //# sourceMappingURL=vue-gamepad.js.map
