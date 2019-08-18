@@ -189,7 +189,7 @@
                     if (initial || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
                       _this.holding[name] = now;
                       if (initial) {
-                        _this.holding[name] += options.buttonInitialTimeout;
+                        _this.holding[name] += options.buttonInitialTimeout - options.buttonRepeatTimeout;
                       }
                       event.callback.call();
                     }
@@ -214,7 +214,7 @@
                     if (initial || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
                       _this.holding[name] = now;
                       if (initial) {
-                        _this.holding[name] += options.buttonInitialTimeout;
+                        _this.holding[name] += options.buttonInitialTimeout - options.buttonRepeatTimeout;
                       }
                       event.callback.call();
                     }
