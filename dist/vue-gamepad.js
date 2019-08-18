@@ -181,12 +181,16 @@
               pad.buttons.forEach(function (button, index) {
                 var name = options.buttonNames[index];
                 if (button.pressed) {
-                  var now = Date.now();
                   var events = get(_this.events, [_this.layer, 'pressed', name], []);
                   if (events.length > 0) {
                     var event = events[events.length - 1];
-                    if (typeof _this.holding[name] === 'undefined' || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
+                    var now = Date.now();
+                    var initial = typeof _this.holding[name] === 'undefined';
+                    if (initial || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
                       _this.holding[name] = now;
+                      if (initial) {
+                        _this.holding[name] += options.buttonInitialTimeout;
+                      }
                       event.callback.call();
                     }
                   }
@@ -206,8 +210,12 @@
                   if (events.length > 0) {
                     var event = events[events.length - 1];
                     var now = Date.now();
-                    if (typeof _this.holding[name] === 'undefined' || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
+                    var initial = typeof _this.holding[name] === 'undefined';
+                    if (initial || event.repeat && now - _this.holding[name] >= options.buttonRepeatTimeout) {
                       _this.holding[name] = now;
+                      if (initial) {
+                        _this.holding[name] += options.buttonInitialTimeout;
+                      }
                       event.callback.call();
                     }
                   }
@@ -257,6 +265,7 @@
         analogThreshold: 0.5,
         buttonNames: ButtonNames,
         buttonRepeatTimeout: 200,
+        buttonInitialTimeout: 200,
         injectClasses: true
       };
       var Gamepad = GamepadFactory(Vue, _objectSpread({}, DefaultOptions, options));
