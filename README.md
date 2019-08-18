@@ -39,7 +39,8 @@ Example usage inside templates:
 |:---|---|---|---|
 |`analogThreshold`|Threshold before analog events are triggered. Low values may cause false positives|`0.5`|`Number`|
 |`buttonMapping`|List of strings containing button indices|[Mapping](lib/button-mapping.js#L1)|`Array`|
-|`buttonRepeatTimeout`|Time (in milliseconds) until the repeat event is triggered when holding a button|`200`|`Number`|
+|`buttonInitialTimeout`|Time (in milliseconds) until the button will start repeating when held down|`200`|`Number`|
+|`buttonRepeatTimeout`|Time (in milliseconds) between each button repeat event when held down|`200`|`Number`|
 |`injectClasses`|Add classes to elements which have a gamepad binding|`true`|`Boolean`|
 
 ## Directives
