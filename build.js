@@ -11,6 +11,12 @@ const banner = `/*!
  * Released under the ${pkg.license} License.
  */`;
 
+function nullsub() {
+  return {
+    name: 'nullsub',
+  };
+}
+
 async function build(minify = false) {
   const filename = `vue-gamepad.${minify ? 'min.' : ''}js`;
 
@@ -21,7 +27,7 @@ async function build(minify = false) {
         babel(),
         cleanup(),
         // allow comments when minifying to preserve banner, comments are removed by plugin-cleanup.
-        minify ? uglify.uglify({ output: { comments: true } }) : () => {},
+        minify ? uglify.uglify({ output: { comments: true } }) : nullsub,
       ],
     });
 
