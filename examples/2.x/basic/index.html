@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic example</title>
+    <script src="../../../node_modules/vue/dist/vue.global.js"></script>
+    <script src="../../../dist/vue-gamepad.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <button v-gamepad:button-a="pressed" v-gamepad:button-a.released="released">{{ text }}</button>
+    </div>
+    <script>
+      const app = Vue.createApp({
+        setup() {
+          const text = Vue.ref('Press me with A (Xbox) or X (PlayStation)!');
+
+          function pressed() {
+            text.value = 'You are pressing the button!';
+          }
+
+          function released() {
+            text.value = 'Press me with A (Xbox) or X (PlayStation)!';
+          }
+
+          return { text, pressed, released };
+        }
+      });
+      
+      app.use(VueGamepad);
+      app.mount('#app');
+    </script>
+  </body>
+</html>

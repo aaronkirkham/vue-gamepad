@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "sourceMap": false,
+    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "isolatedModules": false,
+    "lib": ["esnext", "dom"]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "test/**/*"
+  ]
+}

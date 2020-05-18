@@ -1,6 +1,6 @@
 const path = require('path');
 const rollup = require('rollup');
-const babel = require('rollup-plugin-babel');
+const typescript = require('@rollup/plugin-typescript');
 const cleanup = require('rollup-plugin-cleanup');
 const uglify = require('rollup-plugin-uglify');
 const pkg = require('./package.json');
@@ -18,30 +18,29 @@ function nullsub() {
 }
 
 async function build(minify = false) {
-  const filename = `vue-gamepad.${minify ? 'min.' : ''}js`;
+  const filename = `${pkg.name}.${minify ? 'min.' : ''}js`;
 
   try {
     const bundle = await rollup.rollup({
-      input: path.resolve(__dirname, 'lib/index.js'),
+      input: path.resolve(__dirname, './src/index.ts'),
       plugins: [
-        babel(),
-        cleanup(),
-        // allow comments when minifying to preserve banner, comments are removed by plugin-cleanup.
+        typescript(),
+        cleanup({ comments: 'none' }),
         minify ? uglify.uglify({ output: { comments: true } }) : nullsub,
-      ],
+      ]
     });
 
     await bundle.write({
       file: `./dist/${filename}`,
       format: 'umd',
       name: 'VueGamepad',
-      sourcemap: true,
       banner,
     });
 
-    console.log(`🎉  Built '${filename}'`);
-  } catch (error) {
-    console.error(`😭  Failed to build! Error: ${error.message}`);
+    console.log(`Built '${filename}'.`);
+  } catch (e) {
+    console.error(`Failed to build '${filename}'!`);
+    console.error(e.message);
   }
 }
 

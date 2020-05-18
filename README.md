@@ -23,10 +23,11 @@ https://unpkg.com/vue-gamepad/dist/vue-gamepad.min.js
 ## Usage
 Tell Vue to use the plugin
 ```js
-import Vue from 'vue';
+import { createApp } from 'vue';
 import VueGamepad from 'vue-gamepad';
 
-Vue.use(VueGamepad);
+const app = createApp(...);
+app.use(VueGamepad);
 ```
 
 Example usage inside templates:

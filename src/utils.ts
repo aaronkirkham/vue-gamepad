@@ -1,5 +1,5 @@
 /**
- * helper function to build all nested properties similar to lodash's _.set function
+ * Build all nested properties similar to lodash's _.set function
  *
  * set(object, ['x', 'y', 'z'], 'default')
  * console.log(object.x.y.z);
@@ -9,7 +9,7 @@
  * @param {array} keys list of keys to nest
  * @param {any} value value to set
  */
-export function set(obj, keys, value) {
+export function set<T>(obj: any, keys: Array<any>, value: any): Array<T> {
   /* eslint-disable no-param-reassign */
   obj[keys[0]] = obj[keys[0]] || {};
   const tmp = obj[keys[0]];
@@ -25,7 +25,7 @@ export function set(obj, keys, value) {
 }
 
 /**
- * helper function to get value from a nest object similar to lodash's _.get function
+ * Get value from a nested object similar to lodash's _.get function
  *
  * get({ x: { y: 0 } }, ['x', 'y', 'z'], [])
  * => []
@@ -34,7 +34,7 @@ export function set(obj, keys, value) {
  * @param {array} keys list of keys to use
  * @param {any} [def=undefined] default value if nothing was found
  */
-export function get(obj, keys, def = undefined) {
+export function get<T>(obj: any, keys: Array<any>, def: any = undefined): Array<T> {
   const tmp = obj[keys[0]];
 
   if (keys.length > 1 && tmp) {
