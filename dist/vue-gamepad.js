@@ -27,28 +27,6 @@
         return r;
     }
 
-    function set(obj, keys, value) {
-        obj[keys[0]] = obj[keys[0]] || {};
-        var tmp = obj[keys[0]];
-        if (keys.length > 1) {
-            keys.shift();
-            set(tmp, keys, value);
-        }
-        else {
-            obj[keys[0]] = value;
-        }
-        return obj;
-    }
-    function get(obj, keys, def) {
-        if (def === void 0) { def = undefined; }
-        var tmp = obj[keys[0]];
-        if (keys.length > 1 && tmp) {
-            keys.shift();
-            return get(tmp, keys) || def;
-        }
-        return tmp || def;
-    }
-
     var ButtonNames = [
         'button-a', 'button-b', 'button-x', 'button-y',
         'shoulder-left', 'shoulder-right', 'trigger-left', 'trigger-right',
@@ -74,13 +52,37 @@
         return [PositiveAxisNames[axis], NegativeAxisNames[axis]];
     }
 
-    function GamepadFactory (app, options) {
+    function set(obj, keys, value) {
+        obj[keys[0]] = obj[keys[0]] || {};
+        var tmp = obj[keys[0]];
+        if (keys.length > 1) {
+            keys.shift();
+            set(tmp, keys, value);
+        }
+        else {
+            obj[keys[0]] = value;
+        }
+        return obj;
+    }
+    function get(obj, keys, def) {
+        if (def === void 0) { def = undefined; }
+        var tmp = obj[keys[0]];
+        if (keys.length > 1 && tmp) {
+            keys.shift();
+            return get(tmp, keys) || def;
+        }
+        return tmp || def;
+    }
+
+    function VueGamepadFactory (app, options) {
         return (function () {
             function VueGamepad() {
                 var _this = this;
                 this.events = [];
                 this.holding = {};
-                this.layer = 0;
+                this.currentLayer = 0;
+                this.prevLayers = {};
+                this.vnodeLayers = {};
                 window.addEventListener('gamepadconnected', function () {
                     document.body.classList.add('gamepad-connected');
                 });
@@ -96,57 +98,104 @@
                 var gamepads = navigator.getGamepads();
                 return __spreadArrays(gamepads).filter(function (pad) { return pad !== null; });
             };
-            VueGamepad.prototype.validBinding = function (binding) {
-                var hasArg = typeof binding.arg !== 'undefined';
-                var isFunctionOrEmpty = (typeof binding.value === 'function' || typeof binding.value === 'undefined');
-                return (hasArg && isFunctionOrEmpty);
+            VueGamepad.prototype.validBinding = function (binding, vnode) {
+                var _a;
+                if (typeof binding.arg === 'undefined') {
+                    return 0;
+                }
+                var isFunction = typeof binding.value === 'function';
+                var hasOnClickIfEmpty = !isFunction && typeof ((_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick) === 'function';
+                if (!isFunction && !hasOnClickIfEmpty) {
+                    return 1;
+                }
+                return 2;
+            };
+            VueGamepad.prototype.findLayerForVnode = function (vnode) {
+                for (var layer in this.vnodeLayers) {
+                    var found = this.vnodeLayers[layer].find(function (vn) { return vn === vnode; });
+                    if (found) {
+                        return parseInt(layer, 10);
+                    }
+                }
+                return 0;
             };
             VueGamepad.prototype.addListener = function (event, modifiers, callback, vnode) {
                 var action = modifiers.released ? 'released' : 'pressed';
                 var repeat = !!modifiers.repeat;
-                var events = get(this.events, [this.layer, action, event], []);
+                var layer = this.findLayerForVnode(vnode);
+                var events = get(this.events, [layer, action, event], []);
                 if (events.length === 0) {
-                    set(this.events, [this.layer, action, event], []);
+                    set(this.events, [layer, action, event], []);
                 }
-                this.events[this.layer][action][event].push({ vnode: vnode, repeat: repeat, callback: callback });
+                this.events[layer][action][event].push({ vnode: vnode, repeat: repeat, callback: callback });
                 if (options.injectClasses && vnode && vnode.el) {
                     vnode.el.classList.add('v-gamepad', "v-gamepad--" + event);
                 }
             };
-            VueGamepad.prototype.removeListener = function (event, modifiers, callback) {
+            VueGamepad.prototype.removeListener = function (event, modifiers, callback, vnode) {
                 var action = modifiers.released ? 'released' : 'pressed';
-                var events = get(this.events, [this.layer, action, event], []);
+                var layer = this.findLayerForVnode(vnode);
+                var events = get(this.events, [layer, action, event], []);
+                if (events.length === 0) {
+                    return;
+                }
+                events = events.filter(function (evnt) { return evnt.callback !== callback; });
                 if (events.length > 0) {
-                    events = events.filter(function (e) { return e.callback !== callback; });
-                    if (events.length > 0) {
-                        set(this.events, [this.layer, action, event], events);
-                    }
-                    else {
-                        delete this.events[this.layer][action][event];
-                    }
+                    set(this.events, [layer, action, event], events);
+                }
+                else {
+                    delete this.events[layer][action][event];
                 }
             };
+            VueGamepad.prototype.createLayer = function (layer, vnode) {
+                var _this = this;
+                if (!Array.isArray(vnode.children)) {
+                    return;
+                }
+                if (typeof this.vnodeLayers[layer] === 'undefined') {
+                    this.vnodeLayers[layer] = [];
+                }
+                vnode.children.forEach(function (child) { return _this.vnodeLayers[layer].push(child); });
+            };
+            VueGamepad.prototype.destroyLayer = function (layer) {
+                if (layer === this.currentLayer) {
+                    this.switchToLayer(0);
+                }
+                delete this.prevLayers[layer];
+                delete this.vnodeLayers[layer];
+                delete this.events[layer];
+            };
+            VueGamepad.prototype.switchToLayer = function (layer) {
+                if (layer === void 0) { layer = 0; }
+                if (layer === this.currentLayer) {
+                    return;
+                }
+                if (layer !== 0) {
+                    this.prevLayers[layer] = this.currentLayer;
+                }
+                this.currentLayer = layer;
+            };
             VueGamepad.prototype.runPressedCallbacks = function (buttonName) {
-                var firstPress = typeof this.holding[buttonName] === 'undefined';
-                var currentTime = Date.now();
-                var events = get(this.events, [this.layer, 'pressed', buttonName], []);
+                var events = get(this.events, [this.currentLayer, 'pressed', buttonName], []);
                 if (events.length > 0) {
+                    var firstPress = typeof this.holding[buttonName] === 'undefined';
+                    var currentTime = Date.now();
                     var event_1 = events[events.length - 1];
                     if (firstPress || (event_1.repeat && (currentTime - this.holding[buttonName]) >= options.buttonRepeatTimeout)) {
                         this.holding[buttonName] = currentTime;
                         if (firstPress) {
                             this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
                         }
-                        event_1.callback();
+                        event_1.callback.call(window);
                     }
                 }
             };
             VueGamepad.prototype.runReleasedCallbacks = function (buttonName) {
                 delete this.holding[buttonName];
-                var events = get(this.events, [this.layer, 'released', buttonName], []);
+                var events = get(this.events, [this.currentLayer, 'released', buttonName], []);
                 if (events.length > 0) {
                     var event_2 = events[events.length - 1];
-                    event_2.callback();
+                    event_2.callback.call(window);
                 }
             };
             VueGamepad.prototype.update = function () {
@@ -183,35 +232,52 @@
     var DEFAULT_OPTIONS = {
         analogThreshold: 0.5,
         buttonNames: ButtonNames,
-        buttonRepeatTimeout: 200,
         buttonInitialTimeout: 200,
+        buttonRepeatTimeout: 200,
         injectClasses: true,
     };
+    function bindErrStr(result) {
+        switch (result) {
+            case 0: return 'missing directive argument (v-gamepad:button)';
+            case 1: return 'missing directive callback (v-gamepad:button="callback")';
+        }
+        return '';
+    }
     var index = {
         install: function (app, options) {
             if (options === void 0) { options = {}; }
             if (!('getGamepads' in navigator)) {
                 return console.error('vue-gamepad: your browser does not support the Gamepad API!');
             }
-            var VueGamepad = GamepadFactory(app, __assign(__assign({}, DEFAULT_OPTIONS), options));
+            var VueGamepad = VueGamepadFactory(app, __assign(__assign({}, DEFAULT_OPTIONS), options));
             var gamepad = new VueGamepad();
             app.config.globalProperties.$gamepad = gamepad;
             app.directive('gamepad', {
                 beforeMount: function (el, binding, vnode) {
                     var _a;
-                    if (!gamepad.validBinding(binding)) {
-                        return console.error("vue-gamepad: invalid binding. '" + binding.arg + "' was not bound.");
+                    var result = gamepad.validBinding(binding, vnode);
+                    if (result !== 2) {
+                        console.error("vue-gamepad: '" + binding.arg + "' was not bound. (" + bindErrStr(result) + ")");
+                        return console.log(el);
                     }
                     var callback = typeof binding.value !== 'undefined' ? binding.value : (_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
                     gamepad.addListener(binding.arg, binding.modifiers, callback, vnode);
                 },
                 beforeUnmount: function (el, binding, vnode) {
                     var _a;
-                    if (!gamepad.validBinding(binding)) {
+                    if (gamepad.validBinding(binding, vnode) !== 2) {
                         return;
                     }
                     var callback = typeof binding.value !== 'undefined' ? binding.value : (_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
-                    gamepad.removeListener(binding.arg, binding.modifiers, callback);
+                    gamepad.removeListener(binding.arg, binding.modifiers, callback, vnode);
+                },
+            });
+            app.directive('gamepad-layer', {
+                beforeMount: function (el, binding, vnode) {
+                    gamepad.createLayer(binding.value, vnode);
+                },
+                unmounted: function (el, binding) {
+                    gamepad.destroyLayer(binding.value);
                 },
             });
         },

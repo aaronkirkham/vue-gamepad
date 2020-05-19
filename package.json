@@ -31,31 +31,17 @@
   "homepage": "https://github.com/aaronkirkham/vue-gamepad#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.1",
-    "@vue/compiler-sfc": "^3.0.0-beta.9",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "@vue/compiler-sfc": "^3.0.0-beta.14",
     "@vue/test-utils": "^2.0.0-alpha.3",
-    "rollup": "^2.7.6",
-    "rollup-plugin-cleanup": "^3.1.1",
-    "rollup-plugin-uglify": "^6.0.4",
-    "tslib": "^1.11.2",
-    "typescript": "^3.8.3",
-    "vue": "^3.0.0-beta.9"
-  },
-  "oldDeps": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@vue/test-utils": "^2.0.0-alpha.3",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^26.0.1",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.20.2",
-    "flush-promises": "^1.0.2",
+    "eslint": "^7.0.0",
     "jest": "^26.0.1",
-    "regenerator-runtime": "^0.13.5",
-    "rollup": "^2.7.6",
-    "rollup-plugin-babel": "^4.4.0",
+    "rollup": "^2.10.4",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-uglify": "^6.0.4",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.2",
     "vue": "^3.0.0-beta.9"
   }
 }

@@ -1,8 +1,8 @@
 interface VueGamepadOptions {
   analogThreshold: number;
-  buttonNames: Array<string>,
-  buttonRepeatTimeout: number;
+  buttonNames: Array<string>;
   buttonInitialTimeout: number;
+  buttonRepeatTimeout: number;
   injectClasses: boolean;
 }
 

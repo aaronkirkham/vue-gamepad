@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layers example</title>
+    <script src="../../../node_modules/vue/dist/vue.global.js"></script>
+    <script src="../../../dist/vue-gamepad.js"></script>
+    <style>
+      #app {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-gap: 25px;
+      }
+
+      aside:not(.hasFocus) {
+        opacity: 0.45;
+      }
+
+      nav button {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      nav button.focus {
+        border: 3px solid black;
+      }
+
+      main button {
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <aside :class="{ 'hasFocus': selected === -1 }">
+        <nav v-gamepad:button-dpad-up.repeat="selectMoveUp"
+          v-gamepad:button-dpad-down.repeat="selectMoveDown"
+          v-gamepad:left-analog-up.repeat="selectMoveUp"
+          v-gamepad:left-analog-down.repeat="selectMoveDown"
+          v-gamepad:button-a="selectOption">
+          <button v-for="(option, i) in options" :class="{ 'focus': highlighted === i }" @click="selectOption(i)">{{ option }}</button>
+        </nav>
+      </aside>
+      <main v-if="selected >= 0" v-gamepad-layer="1">
+        <button v-gamepad:button-a @click="confirm">(A) Confirm Selection</button>
+        <button v-gamepad:button-b @click="cancel">(B) Cancel Selection</button>
+        <p>{{ message }}</p>
+      </main>
+    </div>
+    <script>
+      const app = Vue.createApp({
+        setup() {
+          const options = ['Apple', 'Orange', 'Banana', 'Strawberry', 'Pineapple', 'Mango'];
+          const highlighted = Vue.ref(-1);
+          const selected = Vue.ref(-1);
+          const message = Vue.ref('');
+
+          const $gamepad = app.config.globalProperties.$gamepad;
+
+          function selectMoveUp() {
+            highlighted.value = Math.max(highlighted.value - 1, 0);
+          }
+
+          function selectMoveDown() {
+            highlighted.value = Math.min(highlighted.value + 1, options.length - 1);
+          }
+
+          function selectOption(option) {
+            option = option || highlighted.value;
+            highlighted.value = option;
+            selected.value = option;
+            message.value = '';
+
+            // manually switch to layer
+            $gamepad.switchToLayer(1);
+          }
+
+          function confirm() {
+            message.value = `You selected ${options[selected.value]}`;
+          }
+
+          function cancel() {
+            selected.value = -1;
+            $gamepad.switchToLayer(0);
+          }
+
+          return {
+            options,
+            highlighted,
+            selected,
+            message,
+            selectMoveUp,
+            selectMoveDown,
+            selectOption,
+            confirm,
+            cancel,
+          };
+        }
+      });
+      
+      app.use(VueGamepad);
+      app.mount('#app');
+    </script>
+  </body>
+</html>
