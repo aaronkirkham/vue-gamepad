@@ -31,15 +31,17 @@
   "homepage": "https://github.com/aaronkirkham/vue-gamepad#readme",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.1.1",
+    "@types/jest": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "@vue/compiler-sfc": "^3.0.0-beta.14",
-    "@vue/test-utils": "^2.0.0-alpha.3",
+    "@vue/test-utils": "^2.0.0-alpha.6",
     "eslint": "^7.0.0",
     "jest": "^26.0.1",
     "rollup": "^2.10.4",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-uglify": "^6.0.4",
+    "ts-jest": "^26.0.0",
     "tslib": "^2.0.0",
     "typescript": "^3.9.2",
     "vue": "^3.0.0-beta.9"

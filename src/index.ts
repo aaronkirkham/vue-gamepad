@@ -1,23 +1,6 @@
 import { App, DirectiveBinding, VNode } from 'vue';
-import { ButtonNames } from './button-mapping';
+import { DefaultOptions } from './options';
 import VueGamepadFactory, { ValidBindingResult } from './gamepad';
-
-const DEFAULT_OPTIONS: VueGamepadOptions = {
-  // Threshold before analog events are triggered. Low values may cause false positives
-  analogThreshold: 0.5,
-
-  // List of strings containing button indices
-  buttonNames: ButtonNames,
-
-  // Time (in milliseconds) until the button will start repeating when held down
-  buttonInitialTimeout: 200,
-
-  // Time (in milliseconds) between each button repeat event when held down
-  buttonRepeatTimeout: 200,
-
-  // Add classes to elements which have a gamepad binding
-  injectClasses: true,
-};
 
 function bindErrStr(result: ValidBindingResult) {
   switch (result) {
@@ -35,7 +18,7 @@ export default {
       return console.error('vue-gamepad: your browser does not support the Gamepad API!');
     }
 
-    const VueGamepad = VueGamepadFactory(app, { ...DEFAULT_OPTIONS, ...options });
+    const VueGamepad = VueGamepadFactory({ ...DefaultOptions, ...options });
     const gamepad = new VueGamepad();
 
     app.config.globalProperties.$gamepad = gamepad;
@@ -66,11 +49,20 @@ export default {
     // v-gamepad-layer directive
     app.directive('gamepad-layer', {
       beforeMount(el: any, binding: DirectiveBinding, vnode: VNode) {
+        if (typeof binding.value === 'undefined') {
+          console.error(`vue-gamepad: Failed to create layer. (invalid layer value)`);
+          return console.log(el);
+        }
+
         gamepad.createLayer(binding.value, vnode);
       },
       // we use unmounted instead of beforeUnmount so that all other directives have a chance to
       // cleanup before the layer is destroyed.
       unmounted(el: any, binding: DirectiveBinding) {
+        if (typeof binding.value === 'undefined') {
+          return;
+        }
+
         gamepad.destroyLayer(binding.value);
       },
     });

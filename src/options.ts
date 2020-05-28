@@ -1,4 +1,5 @@
-export const ButtonNames: Array<string> = [
+// All bindable button names
+export const ButtonNames = [
   'button-a', 'button-b', 'button-x', 'button-y',
   'shoulder-left', 'shoulder-right', 'trigger-left', 'trigger-right',
   'button-select', 'button-start',
@@ -7,15 +8,35 @@ export const ButtonNames: Array<string> = [
   'vendor',
 ];
 
-export const PositiveAxisNames: Array<string> = [
+// All bindable positive axis names
+export const PositiveAxisNames = [
   'left-analog-right', 'left-analog-down',
   'right-analog-right', 'right-analog-down',
 ];
 
-export const NegativeAxisNames: Array<string> = [
+// All bindable negative axis names
+export const NegativeAxisNames = [
   'left-analog-left', 'left-analog-up',
   'right-analog-left', 'right-analog-up',
 ];
+
+// Default options
+export const DefaultOptions: VueGamepadOptions = {
+  // Threshold before analog events are triggered. Low values may cause false positives
+  analogThreshold: 0.5,
+
+  // List of strings containing button indices
+  buttonNames: ButtonNames,
+
+  // Time (in milliseconds) until the button will start repeating when held down
+  buttonInitialTimeout: 200,
+
+  // Time (in milliseconds) between each button repeat event when held down
+  buttonRepeatTimeout: 200,
+
+  // Add classes to elements which have a gamepad binding
+  injectClasses: true,
+};
 
 /**
  * Get name of axis from input value

@@ -42,7 +42,7 @@
           <button v-for="(option, i) in options" :class="{ 'focus': highlighted === i }" @click="selectOption(i)">{{ option }}</button>
         </nav>
       </aside>
-      <main v-if="selected >= 0" v-gamepad-layer="1">
+      <main v-if="selected >= 0" v-gamepad-layer="'test'">
         <button v-gamepad:button-a @click="confirm">(A) Confirm Selection</button>
         <button v-gamepad:button-b @click="cancel">(B) Cancel Selection</button>
         <p>{{ message }}</p>
@@ -73,7 +73,7 @@
             message.value = '';
 
             // manually switch to layer
-            $gamepad.switchToLayer(1);
+            $gamepad.switchToLayer('test');
           }
 
           function confirm() {
@@ -82,7 +82,7 @@
 
           function cancel() {
             selected.value = -1;
-            $gamepad.switchToLayer(0);
+            $gamepad.switchToDefaultLayer();
           }
 
           return {

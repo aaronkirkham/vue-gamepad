@@ -1,6 +1,7 @@
 module.exports = {
-  setupFiles: [
-    '<rootDir>/tests/setup.js',
-  ],
-  verbose: true,
+  preset: 'ts-jest',
+  rootDir: __dirname,
+  testMatch: ['<rootDir>/tests/**/*.spec.ts?(x)'],
+  testPathIgnorePatterns: ['/node_modules/'],
+  setupFilesAfterEnv: ['./tests/setup.ts'],
 };

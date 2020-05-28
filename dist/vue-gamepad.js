@@ -1,5 +1,5 @@
 /*!
- * vue-gamepad v2.0.0
+ * vue-gamepad v2.0.0-beta.0
  * (c) 2020 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */
@@ -43,6 +43,13 @@
         'left-analog-left', 'left-analog-up',
         'right-analog-left', 'right-analog-up',
     ];
+    var DefaultOptions = {
+        analogThreshold: 0.5,
+        buttonNames: ButtonNames,
+        buttonInitialTimeout: 200,
+        buttonRepeatTimeout: 200,
+        injectClasses: true,
+    };
     function getAxisNameFromValue(axis, value) {
         if (value > 0)
             return PositiveAxisNames[axis];
@@ -74,13 +81,14 @@
         return tmp || def;
     }
 
-    function VueGamepadFactory (app, options) {
+    function VueGamepadFactory (options) {
+        if (options === void 0) { options = DefaultOptions; }
         return (function () {
             function VueGamepad() {
                 var _this = this;
-                this.events = [];
+                this.events = {};
                 this.holding = {};
-                this.currentLayer = 0;
+                this.currentLayer = '';
                 this.prevLayers = {};
                 this.vnodeLayers = {};
                 window.addEventListener('gamepadconnected', function () {
@@ -111,13 +119,15 @@
                 return 2;
             };
             VueGamepad.prototype.findLayerForVnode = function (vnode) {
-                for (var layer in this.vnodeLayers) {
-                    var found = this.vnodeLayers[layer].find(function (vn) { return vn === vnode; });
-                    if (found) {
-                        return parseInt(layer, 10);
+                if (vnode) {
+                    for (var layer in this.vnodeLayers) {
+                        var found = this.vnodeLayers[layer].find(function (vn) { return vn === vnode; });
+                        if (found) {
+                            return layer;
+                        }
                     }
                 }
-                return 0;
+                return '';
             };
             VueGamepad.prototype.addListener = function (event, modifiers, callback, vnode) {
                 var action = modifiers.released ? 'released' : 'pressed';
@@ -159,21 +169,24 @@
             };
             VueGamepad.prototype.destroyLayer = function (layer) {
                 if (layer === this.currentLayer) {
-                    this.switchToLayer(0);
+                    this.currentLayer = this.prevLayers[layer];
                 }
                 delete this.prevLayers[layer];
                 delete this.vnodeLayers[layer];
                 delete this.events[layer];
             };
             VueGamepad.prototype.switchToLayer = function (layer) {
-                if (layer === void 0) { layer = 0; }
+                if (layer === void 0) { layer = ''; }
                 if (layer === this.currentLayer) {
                     return;
                 }
-                if (layer !== 0) {
+                if (layer !== '') {
                     this.prevLayers[layer] = this.currentLayer;
                 }
                 this.currentLayer = layer;
+            };
+            VueGamepad.prototype.switchToDefaultLayer = function () {
+                return this.switchToLayer('');
             };
             VueGamepad.prototype.runPressedCallbacks = function (buttonName) {
                 var events = get(this.events, [this.currentLayer, 'pressed', buttonName], []);
@@ -229,13 +242,6 @@
         }());
     }
 
-    var DEFAULT_OPTIONS = {
-        analogThreshold: 0.5,
-        buttonNames: ButtonNames,
-        buttonInitialTimeout: 200,
-        buttonRepeatTimeout: 200,
-        injectClasses: true,
-    };
     function bindErrStr(result) {
         switch (result) {
             case 0: return 'missing directive argument (v-gamepad:button)';
@@ -249,7 +255,7 @@
             if (!('getGamepads' in navigator)) {
                 return console.error('vue-gamepad: your browser does not support the Gamepad API!');
             }
-            var VueGamepad = VueGamepadFactory(app, __assign(__assign({}, DEFAULT_OPTIONS), options));
+            var VueGamepad = VueGamepadFactory(__assign(__assign({}, DefaultOptions), options));
             var gamepad = new VueGamepad();
             app.config.globalProperties.$gamepad = gamepad;
             app.directive('gamepad', {
@@ -274,9 +280,16 @@
             });
             app.directive('gamepad-layer', {
                 beforeMount: function (el, binding, vnode) {
+                    if (typeof binding.value === 'undefined') {
+                        console.error("vue-gamepad: Failed to create layer. (invalid layer value)");
+                        return console.log(el);
+                    }
                     gamepad.createLayer(binding.value, vnode);
                 },
                 unmounted: function (el, binding) {
+                    if (typeof binding.value === 'undefined') {
+                        return;
+                    }
                     gamepad.destroyLayer(binding.value);
                 },
             });
