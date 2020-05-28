@@ -1,5 +1,5 @@
 /*!
- * vue-gamepad v2.0.0-beta.0
+ * vue-gamepad v2.0.0-beta.1
  * (c) 2020 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */

@@ -5,7 +5,7 @@ config.global.plugins = [
   VueGamepad,
 ];
 
-// throw if console error occured
+// throw if console error occurred
 global.console.error = (message: any) => {
   throw message;
 }
