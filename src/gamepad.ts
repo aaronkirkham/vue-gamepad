@@ -10,7 +10,7 @@ export const enum ValidBindingResult {
 
 export default function(options: VueGamepadOptions = DefaultOptions) {
   return class VueGamepad {
-    events: any = {};
+    events: VueGamepadEvents = {};
     holding: { [buttonName: string]: number } = {};
     currentLayer = '';
     prevLayers: { [layer: string]: string } = {};
@@ -21,7 +21,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
        * A gamepad was connected
        */
       window.addEventListener('gamepadconnected', () => {
-        document.body.classList.add('gamepad-connected');
+        document.body.classList.add(`${options.classPrefix}-connected`);
       });
 
       /**
@@ -30,7 +30,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
       window.addEventListener('gamepaddisconnected', () => {
         const gamepads = this.getGamepads();
         if (gamepads.length === 0) {
-          document.body.classList.remove('gamepad-connected');
+          document.body.classList.remove(`${options.classPrefix}-connected`);
         }
       });
 
@@ -58,11 +58,11 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
       }
 
       const isFunction = typeof binding.value === 'function';
-      const hasOnClickIfEmpty = !isFunction && typeof vnode?.props?.onClick === 'function';
+      const hasOnClickCallback = typeof vnode?.props?.onClick === 'function';
 
       // if no function callback is passed to the directive, we will try use the onClick
       // handler, if that is also not set, we have no callback.
-      if (!isFunction && !hasOnClickIfEmpty) {
+      if (!isFunction && !hasOnClickCallback) {
         return ValidBindingResult.E_INVALID_CALLBACK;
       }
 
@@ -102,7 +102,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
       const layer = this.findLayerForVnode(vnode);
 
       // if we don't already have an array initialised for the current event do it now
-      const events = get(this.events, [layer, action, event], []);
+      const events = get<VueGamepadEvent>(this.events, [layer, action, event], []);
       if (events.length === 0) {
         set(this.events, [layer, action, event], []);
       }
@@ -112,7 +112,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
 
       // inject classes
       if (options.injectClasses && vnode && vnode.el) {
-        vnode.el.classList.add('v-gamepad', `v-gamepad--${event}`);
+        vnode.el.classList.add(options.classPrefix, `${options.classPrefix}--${event}`);
       }
     }
 
@@ -172,7 +172,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
     destroyLayer(layer: string) {
       // if we are current on the layer we are destroying, switch back
       if (layer === this.currentLayer) {
-        this.currentLayer  = this.prevLayers[layer];
+        this.currentLayer = this.prevLayers[layer];
       }
 
       // destroy layers

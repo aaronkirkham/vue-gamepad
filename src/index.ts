@@ -32,8 +32,8 @@ export default {
           return console.log(el);
         }
 
-        // if binding doesn't contain any callback, use the onClick callback
-        const callback = typeof binding.value !== 'undefined' ? binding.value : vnode?.props?.onClick;
+        // if binding doesn't contain any callback function, use the onClick callback
+        const callback = typeof binding.value === 'function' ? binding.value : vnode?.props?.onClick;
         gamepad.addListener(binding.arg as string, binding.modifiers, callback, vnode);
       },
       beforeUnmount(el: any, binding: DirectiveBinding, vnode: VNode) {
@@ -41,7 +41,7 @@ export default {
           return;
         }
 
-        const callback = typeof binding.value !== 'undefined' ? binding.value : vnode?.props?.onClick;
+        const callback = typeof binding.value === 'function' ? binding.value : vnode?.props?.onClick;
         gamepad.removeListener(binding.arg as string, binding.modifiers, callback, vnode);
       },
     });

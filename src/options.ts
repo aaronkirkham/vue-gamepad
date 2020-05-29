@@ -36,6 +36,9 @@ export const DefaultOptions: VueGamepadOptions = {
 
   // Add classes to elements which have a gamepad binding
   injectClasses: true,
+
+  // String which will be prefixed to all injected classes
+  classPrefix: 'v-gamepad',
 };
 
 /**

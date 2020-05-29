@@ -10,7 +10,6 @@
  * @param {any} value value to set
  */
 export function set<T>(obj: any, keys: Array<any>, value: any): Array<T> {
-  /* eslint-disable no-param-reassign */
   obj[keys[0]] = obj[keys[0]] || {};
   const tmp = obj[keys[0]];
 

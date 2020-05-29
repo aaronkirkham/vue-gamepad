@@ -4,6 +4,7 @@ interface VueGamepadOptions {
   buttonInitialTimeout: number;
   buttonRepeatTimeout: number;
   injectClasses: boolean;
+  classPrefix: string;
 }
 
 interface ListenerModifiers {
@@ -15,6 +16,14 @@ declare type ListenerCallback = () => any;
 
 interface ListenerEvent {
   callback?: ListenerCallback;
+}
+
+interface VueGamepadEvents {
+  [layer: string]: {
+    [action: string]: {
+      [event: string]: VueGamepadEvent[];
+    };
+  };
 }
 
 interface VueGamepadEvent {

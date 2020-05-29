@@ -42,7 +42,7 @@ describe('Gamepad', () => {
 
   it('registered an event listener', () => {
     gamepad.addListener('button-a', {}, testCallbackEventListener);
-    expect(gamepad.events.length === 1);
+    expect(gamepad.events['']['pressed']['button-a']).toBeDefined();
     expect(gamepad.events['']['pressed']['button-a'][0].callback).toEqual(testCallbackEventListener);
   });
 
@@ -53,7 +53,7 @@ describe('Gamepad', () => {
 
   it('unregistered an event listener', () => {
     gamepad.removeListener('button-a', {}, testCallbackEventListener);
-    expect(gamepad.events.length === 0);
+    expect(gamepad.events['']['pressed']['button-a']).toBeUndefined();
   });
 
   it('can switch layers', () => {

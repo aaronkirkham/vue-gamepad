@@ -35,6 +35,8 @@ Example usage inside templates:
 <button v-gamepad:button-a="callback">Press me!</button>
 ```
 
+See [Examples](examples/2.x/) for more.
+
 ## Constructor Options
 |Key|Description|Default|Type|
 |:---|---|---|---|
@@ -43,13 +45,13 @@ Example usage inside templates:
 |`buttonInitialTimeout`|Time (in milliseconds) until the button will start repeating when held down|`200`|`Number`|
 |`buttonRepeatTimeout`|Time (in milliseconds) between each button repeat event when held down|`200`|`Number`|
 |`injectClasses`|Add classes to elements which have a gamepad binding|`true`|`Boolean`|
+|`classPrefix`|String which will be prefixed to all injected classes|`v-gamepad`|`String`|
 
 ## Directives
 - `v-gamepad` - Bind an element to a gamepad action which will fire a callback
   - `released` modifier - Only fire the callback when the button is released
   - `repeat` modifier - Repeatedly fire the callback when the button is held
-- ~~`v-gamepad-layer` - TODO~~
-- ~~`v-gamepad-json` - Pass a raw object of buttons, actions and callbacks to bind~~
+- `v-gamepad-layer` - Bind gamepad actions to different layers ([See Examples](examples/2.x/layers/))
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

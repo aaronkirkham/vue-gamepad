@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import VueGamepadFactory from '../src/gamepad';
 
@@ -96,5 +97,32 @@ describe('Binding', () => {
     // defaultLayerCallback should not have been called any more times
     expect(defaultLayerCallback).toHaveBeenCalledTimes(1);
     expect(testLayerCallback).toHaveBeenCalledTimes(1);
+  });
+
+  it('v-gamepad-layer is destroyed when element is unmounted and events are unbound', async () => {
+    const wrapper = mount({
+      template: `<div v-if="show" v-gamepad-layer="'test'">
+          <button v-gamepad:button-a="callback"></button>
+        </div>`,
+      data: () => {
+        return {
+          show: true,
+        };
+      },
+      methods: {
+        callback: () => {}
+      },
+    });
+
+    const gamepad = getGamepad(wrapper);
+
+    expect(gamepad.events['test']).toBeDefined();
+    gamepad.switchToLayer('test');
+
+    wrapper.vm.show = false;
+    await nextTick();
+
+    expect(gamepad.currentLayer).toEqual('');
+    expect(gamepad.events).toEqual({});
   });
 });
