@@ -71,10 +71,10 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
     }
 
     /**
-     * Find the layer ID for the current vnode
+     * Get the layer ID for a given vnode
      * @param {VNode} vnode Vue directive vnode
      */
-    findLayerForVnode(vnode?: VNode): string {
+    getVNodeLayer(vnode?: VNode): string {
       if (vnode) {
         for (const layer in this.vnodeLayers) {
           const found = this.vnodeLayers[layer].find((vn) => vn === vnode);
@@ -94,12 +94,10 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {ListenerCallback} callback Callback function when button is pressed
      * @param {VNode} [vnode] Vue directive vnode
      */
-    addListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode) {
+    addListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode): void {
       const action = modifiers.released ? 'released' : 'pressed';
       const repeat = !!modifiers.repeat;
-
-      //
-      const layer = this.findLayerForVnode(vnode);
+      const layer = this.getVNodeLayer(vnode);
 
       // if we don't already have an array initialised for the current event do it now
       const events = get<VueGamepadEvent>(this.events, [layer, action, event], []);
@@ -123,11 +121,9 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {ListenerCallback} callback Callback function when button is pressed
      * @param {VNode} [vnode] Vue directive vnode
      */
-    removeListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode) {
+    removeListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode): void {
       const action = modifiers.released ? 'released' : 'pressed';
-
-      //
-      const layer = this.findLayerForVnode(vnode);
+      const layer = this.getVNodeLayer(vnode);
 
       // get a list of all events for the current action
       let events = get<VueGamepadEvent>(this.events, [layer, action, event], []);
@@ -136,7 +132,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
       }
       
       // we only want events which match the callback
-      events = events.filter((evnt: ListenerEvent) => evnt.callback !== callback);
+      events = events.filter((e: VueGamepadEvent) => e.callback !== callback);
 
       // if we have any remaining events after the filter, update the array
       // otherwise delete the object
@@ -152,7 +148,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {string} layer ID of the layer to create
      * @param {VNode} vnode Vue directive vnode
      */
-    createLayer(layer: string, vnode: VNode) {
+    createLayer(layer: string, vnode: VNode): void {
       if (!Array.isArray(vnode.children)) {
         return;
       }
@@ -169,7 +165,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * Destroy layer and go back to the previous layer (INTERNAL)
      * @param {string} layer ID of the layer to destroy
      */
-    destroyLayer(layer: string) {
+    destroyLayer(layer: string): void {
       // if we are current on the layer we are destroying, switch back
       if (layer === this.currentLayer) {
         this.currentLayer = this.prevLayers[layer];
@@ -185,7 +181,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * Switch to a specific layer
      * @param {string} layer ID of the layer to switch to
      */
-    switchToLayer(layer = '') {
+    switchToLayer(layer = ''): void {
       if (layer === this.currentLayer) {
         return;
       }
@@ -202,15 +198,16 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
     /**
      * Helper function to switch back to the default layer
      */
-    switchToDefaultLayer() {
+    switchToDefaultLayer(): void {
       return this.switchToLayer('');
     }
 
     /**
      * Run all pressed button callbacks for the current layer
      * @param {string} buttonName Name of the button (or axis) to run callbacks for
+     * @param {gamepad} gamepad Gamepad object which triggered the event
      */
-    runPressedCallbacks(buttonName: string) {
+    runPressedCallbacks(buttonName: string, gamepad: Gamepad): void {
       const events = get<VueGamepadEvent>(this.events, [this.currentLayer, 'pressed', buttonName], []);
       if (events.length > 0) {
         const firstPress = typeof this.holding[buttonName] === 'undefined';
@@ -226,7 +223,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
             this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
           }
 
-          event.callback.call(window);
+          event.callback.call(null, { buttonName, gamepad });
         }
       }
     }
@@ -234,21 +231,22 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
     /**
      * Run all released button callbacks for the current layer
      * @param {string} buttonName Name of the button (or axis) to run callbacks for
+     * @param {gamepad} gamepad Gamepad object which triggered the event
      */
-    runReleasedCallbacks(buttonName: string) {
+    runReleasedCallbacks(buttonName: string, gamepad: Gamepad): void {
       delete this.holding[buttonName];
 
       const events = get<VueGamepadEvent>(this.events, [this.currentLayer, 'released', buttonName], []);
       if (events.length > 0) {
         const event = events[events.length - 1];
-        event.callback.call(window);
+        event.callback.call(null, { buttonName, gamepad });
       }
     }
 
     /**
      * Main loop
      */
-    update() {
+    update(): void {
       const gamepads = this.getGamepads();
       gamepads.forEach((gamepad) => {
         // update gamepad button
@@ -256,9 +254,9 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
           const buttonName = options.buttonNames[index];
 
           if (button.pressed) {
-            this.runPressedCallbacks(buttonName);
+            this.runPressedCallbacks(buttonName, gamepad);
           } else if (typeof this.holding[buttonName] !== 'undefined') {
-            this.runReleasedCallbacks(buttonName);
+            this.runReleasedCallbacks(buttonName, gamepad);
           }
         });
 
@@ -266,13 +264,13 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
         gamepad.axes.forEach((value: number, index: number) => {
           if (value >= options.analogThreshold || value <= -(options.analogThreshold)) {
             const axisName = getAxisNameFromValue(index, value);
-            this.runPressedCallbacks(axisName);
+            this.runPressedCallbacks(axisName, gamepad);
           } else {
             const axisNames = getAxisNames(index);
 
             // trigger the release event if this axis was previously "pressed"
             axisNames.filter((axisName) => this.holding[axisName])
-              .forEach((axisName) => this.runReleasedCallbacks(axisName));
+              .forEach((axisName) => this.runReleasedCallbacks(axisName, gamepad));
           }
         });
       });

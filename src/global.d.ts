@@ -12,12 +12,6 @@ interface ListenerModifiers {
   repeat?: boolean;
 }
 
-declare type ListenerCallback = () => any;
-
-interface ListenerEvent {
-  callback?: ListenerCallback;
-}
-
 interface VueGamepadEvents {
   [layer: string]: {
     [action: string]: {
@@ -25,6 +19,13 @@ interface VueGamepadEvents {
     };
   };
 }
+
+interface ListenerCallbackEvent {
+  buttonName: string;
+  gamepad: Gamepad;
+}
+
+declare type ListenerCallback = (event: ListenerCallbackEvent) => any;
 
 interface VueGamepadEvent {
   vnode: any;

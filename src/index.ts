@@ -12,7 +12,7 @@ function bindErrStr(result: ValidBindingResult) {
 }
 
 export default {
-  install(app: App, options: object = {}) {
+  install(app: App, options: any[]): any {
     // we need basic gamepad api support to work
     if (!('getGamepads' in navigator)) {
       return console.error('vue-gamepad: your browser does not support the Gamepad API!');
