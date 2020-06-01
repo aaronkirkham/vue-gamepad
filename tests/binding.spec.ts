@@ -28,8 +28,11 @@ describe('Binding', () => {
       },
     });
 
+    // @ts-ignore
+    const nullGamepad: Gamepad = null;
+
     const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a');
+    gamepad.runPressedCallbacks('button-a', nullGamepad);
 
     expect(callback).toHaveBeenCalled();
   });
@@ -43,8 +46,11 @@ describe('Binding', () => {
       },
     });
 
+    // @ts-ignore
+    const nullGamepad: Gamepad = null;
+
     const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a');
+    gamepad.runPressedCallbacks('button-a', nullGamepad);
 
     expect(callback).toHaveBeenCalled();
   });
@@ -81,17 +87,20 @@ describe('Binding', () => {
       },
     });
 
+    // @ts-ignore
+    const nullGamepad: Gamepad = null;
+
     const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a');
-    gamepad.runReleasedCallbacks('button-a');
+    gamepad.runPressedCallbacks('button-a', nullGamepad);
+    gamepad.runReleasedCallbacks('button-a', nullGamepad);
 
     // testLayerCallback should not run because we are on the default layer
     expect(defaultLayerCallback).toHaveBeenCalledTimes(1);
     expect(testLayerCallback).toHaveBeenCalledTimes(0);
 
     gamepad.switchToLayer('test');
-    gamepad.runPressedCallbacks('button-a');
-    gamepad.runReleasedCallbacks('button-a');
+    gamepad.runPressedCallbacks('button-a', nullGamepad);
+    gamepad.runReleasedCallbacks('button-a', nullGamepad);
     
     // testLayerCallback should now have been called
     // defaultLayerCallback should not have been called any more times

@@ -47,7 +47,9 @@ describe('Gamepad', () => {
   });
 
   it('event listener callback was fired', () => {
-    gamepad.runPressedCallbacks('button-a');
+    // @ts-ignore
+    const nullGamepad: Gamepad = null;
+    gamepad.runPressedCallbacks('button-a', nullGamepad);
     expect(testCallbackEventListener).toHaveBeenCalled();
   });
 

@@ -2,7 +2,7 @@
   "name": "vue-gamepad",
   "version": "2.0.0-beta.1",
   "description": "A Vue.js plugin to add gamepad support.",
-  "main": "./dist/vue-gamepad.js",
+  "main": "dist/vue-gamepad.js",
   "directories": {
     "dist": "dist",
     "examples": "examples",
@@ -14,6 +14,9 @@
     "test": "jest --no-cache",
     "lint": "eslint src/**"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaronkirkham/vue-gamepad.git"
@@ -21,6 +24,7 @@
   "keywords": [
     "vue",
     "javascript",
+    "typescript",
     "gamepad"
   ],
   "author": "Aaron Kirkham <aaron@kirkh.am>",
@@ -38,10 +42,10 @@
     "@vue/test-utils": "^2.0.0-alpha.6",
     "eslint": "^7.1.0",
     "jest": "^26.0.1",
-    "rollup": "^2.11.2",
+    "rollup": "^2.12.0",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-uglify": "^6.0.4",
-    "ts-jest": "^26.0.0",
+    "ts-jest": "^26.1.0",
     "tslib": "^2.0.0",
     "typescript": "^3.9.3",
     "vue": "^3.0.0-beta.14"
