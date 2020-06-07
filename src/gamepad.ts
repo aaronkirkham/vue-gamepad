@@ -149,16 +149,20 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {VNode} vnode Vue directive vnode
      */
     createLayer(layer: string, vnode: VNode): void {
-      if (!Array.isArray(vnode.children)) {
-        return;
-      }
-
       // init array if layer doesn't exist
       if (typeof this.vnodeLayers[layer] === 'undefined') {
         this.vnodeLayers[layer] = [];
       }
 
-      vnode.children.forEach((child) => this.vnodeLayers[layer].push(child as VNode));
+      // ignore vnodes which are not using any directives
+      if (vnode.dirs) {
+        this.vnodeLayers[layer].push(vnode);
+      }
+
+      // if this vnode has children, check all child vnodes
+      if (Array.isArray(vnode.children)) {
+        vnode.children.forEach((child) => this.createLayer(layer, child as VNode));
+      }
     }
 
     /**

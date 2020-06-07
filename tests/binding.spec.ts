@@ -131,6 +131,7 @@ describe('Binding', () => {
     });
 
     const vuegamepad = getVueGamepad(wrapper);
+
     mockGamepadButtonPress(vuegamepad, 'button-a');
     mockGamepadButtonRelease(vuegamepad, 'button-a');
 
@@ -140,12 +141,35 @@ describe('Binding', () => {
 
     vuegamepad.switchToLayer('test');
     mockGamepadButtonPress(vuegamepad, 'button-a');
-    mockGamepadButtonRelease(vuegamepad, 'button-a');
     
     // testLayerCallback should now have been called
     // defaultLayerCallback should not have been called any more times
     expect(defaultLayerCallback).toHaveBeenCalledTimes(1);
     expect(testLayerCallback).toHaveBeenCalledTimes(1);
+  });
+
+  it('v-gamepad-layer bindings will use the correct layer for nested vnodes', () => {
+    const wrapper = mount({
+      template: `<div v-gamepad-layer="'test'">
+          <button v-gamepad:button-a="callback">Hello</button>
+          <div class="child">
+            <button v-gamepad:button-b="callback">Hello Again!</button>
+            <div class="another-child">
+              <button v-gamepad:button-x="callback">Hello Again... Again!</button>
+            </div>
+          </div>
+        </div>`,
+      methods: {
+        callback: () => {},
+      },
+    });
+
+    const vuegamepad = getVueGamepad(wrapper);
+
+    expect(vuegamepad.events['']).toBeUndefined();
+    expect(vuegamepad.events['test']['pressed']['button-a']).toBeDefined();
+    expect(vuegamepad.events['test']['pressed']['button-b']).toBeDefined();
+    expect(vuegamepad.events['test']['pressed']['button-x']).toBeDefined();
   });
 
   it('v-gamepad-layer is destroyed when element is unmounted and events are unbound', async () => {
