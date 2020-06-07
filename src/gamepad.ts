@@ -209,20 +209,20 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      */
     runPressedCallbacks(buttonName: string, gamepad: Gamepad): void {
       const events = get<VueGamepadEvent>(this.events, [this.currentLayer, 'pressed', buttonName], []);
-      if (events.length > 0) {
-        const firstPress = typeof this.holding[buttonName] === 'undefined';
-        const currentTime = Date.now();
-        const event = events[events.length - 1];
+      const firstPress = typeof this.holding[buttonName] === 'undefined';
+      const currentTime = Date.now();
+      const event = events[events.length - 1];
 
-        // button was just pressed, or is repeating
-        if (firstPress || (event.repeat && (currentTime - this.holding[buttonName]) >= options.buttonRepeatTimeout)) {
-          this.holding[buttonName] = currentTime;
+      // button was just pressed, or is repeating
+      if (firstPress || (event && event.repeat && (currentTime - this.holding[buttonName]) >= options.buttonRepeatTimeout)) {
+        this.holding[buttonName] = currentTime;
 
-          // was first press
-          if (firstPress) {
-            this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
-          }
+        // was first press
+        if (firstPress) {
+          this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
+        }
 
+        if (event) {
           event.callback.call(null, { buttonName, gamepad });
         }
       }
@@ -266,10 +266,9 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
             const axisName = getAxisNameFromValue(index, value);
             this.runPressedCallbacks(axisName, gamepad);
           } else {
-            const axisNames = getAxisNames(index);
-
             // trigger the release event if this axis was previously "pressed"
-            axisNames.filter((axisName) => this.holding[axisName])
+            getAxisNames(index)
+              .filter((axisName) => this.holding[axisName])
               .forEach((axisName) => this.runReleasedCallbacks(axisName, gamepad));
           }
         });

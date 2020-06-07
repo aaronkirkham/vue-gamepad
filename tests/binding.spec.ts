@@ -1,11 +1,43 @@
 import { nextTick } from 'vue';
 import { mount } from '@vue/test-utils';
 import VueGamepadFactory from '../src/gamepad';
+import { ButtonNames, PositiveAxisNames } from '../src/options';
 
-function getGamepad(wrapper: any) {
+function getVueGamepad(wrapper: any) {
   const T = new (VueGamepadFactory()); // hack for type info
   return wrapper['__app'].config.globalProperties.$gamepad as typeof T;
 }
+
+let mockGamepad: any = { buttons: [], axes: [] };
+
+function mockGamepadReset() {
+  const buttons = Array.from({ length: ButtonNames.length }, () => ({ value: 0, pressed: false }));
+  const axes = new Array(PositiveAxisNames.length).fill(0);
+
+  mockGamepad = { buttons, axes };
+}
+
+function mockGamepadButtonPress(vuegamepad: any, buttonName: string) {
+  const idx = ButtonNames.indexOf(buttonName);
+
+  mockGamepad.buttons[idx].value = 1;
+  mockGamepad.buttons[idx].pressed = true;
+
+  vuegamepad.update();
+}
+
+function mockGamepadButtonRelease(vuegamepad: any, buttonName: string) {
+  const idx = ButtonNames.indexOf(buttonName);
+
+  mockGamepad.buttons[idx].value = 0;
+  mockGamepad.buttons[idx].pressed = false;
+
+  vuegamepad.update();
+}
+
+beforeAll(() => navigator.getGamepads = () => [mockGamepad]); // route getGamepads to our mock gamepad
+afterAll(() => navigator.getGamepads = () => []); // reset getGamepads after all tests
+beforeEach(() => mockGamepadReset()); // reset all buttons/axex before each test
 
 describe('Binding', () => {
   it('v-gamepad directive was bound', () => {
@@ -19,7 +51,7 @@ describe('Binding', () => {
     expect(wrapper.html()).toEqual('<button class="v-gamepad v-gamepad--button-a">Hello</button>');
   });
 
-  it('v-gamepad callback was triggered', () => {
+  it('v-gamepad pressed callback was triggered', () => {
     const callback = jest.fn();
     const wrapper = mount({
       template: '<button v-gamepad:button-a="callback">Hello</button>',
@@ -27,13 +59,27 @@ describe('Binding', () => {
         callback,
       },
     });
+    
+    const vuegamepad = getVueGamepad(wrapper);
+    mockGamepadButtonPress(vuegamepad, 'button-a');
 
-    // @ts-ignore
-    const nullGamepad: Gamepad = null;
+    expect(callback).toHaveBeenCalled();
+  });
 
-    const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a', nullGamepad);
+  it('v-gamepad released callback was triggered', () => {
+    const callback = jest.fn();
+    const wrapper = mount({
+      template: '<button v-gamepad:button-a.released="callback">Hello</button>',
+      methods: {
+        callback,
+      },
+    });
 
+    
+    const vuegamepad = getVueGamepad(wrapper);
+    mockGamepadButtonPress(vuegamepad, 'button-a');
+    mockGamepadButtonRelease(vuegamepad, 'button-a');
+    
     expect(callback).toHaveBeenCalled();
   });
 
@@ -46,11 +92,8 @@ describe('Binding', () => {
       },
     });
 
-    // @ts-ignore
-    const nullGamepad: Gamepad = null;
-
-    const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a', nullGamepad);
+    const vuegamepad = getVueGamepad(wrapper);
+    mockGamepadButtonPress(vuegamepad, 'button-a');
 
     expect(callback).toHaveBeenCalled();
   });
@@ -66,11 +109,11 @@ describe('Binding', () => {
       },
     });
 
-    const gamepad = getGamepad(wrapper);
+    const vuegamepad = getVueGamepad(wrapper);
 
-    expect(gamepad.currentLayer).toEqual('');
-    expect(gamepad.events['']).toBeUndefined();
-    expect(gamepad.events['test']['pressed']['button-a']).toBeDefined();
+    expect(vuegamepad.currentLayer).toEqual('');
+    expect(vuegamepad.events['']).toBeUndefined();
+    expect(vuegamepad.events['test']['pressed']['button-a']).toBeDefined();
   });
 
   it('v-gamepad callback was triggered on the correct layer', () => {
@@ -87,20 +130,17 @@ describe('Binding', () => {
       },
     });
 
-    // @ts-ignore
-    const nullGamepad: Gamepad = null;
-
-    const gamepad = getGamepad(wrapper);
-    gamepad.runPressedCallbacks('button-a', nullGamepad);
-    gamepad.runReleasedCallbacks('button-a', nullGamepad);
+    const vuegamepad = getVueGamepad(wrapper);
+    mockGamepadButtonPress(vuegamepad, 'button-a');
+    mockGamepadButtonRelease(vuegamepad, 'button-a');
 
     // testLayerCallback should not run because we are on the default layer
     expect(defaultLayerCallback).toHaveBeenCalledTimes(1);
     expect(testLayerCallback).toHaveBeenCalledTimes(0);
 
-    gamepad.switchToLayer('test');
-    gamepad.runPressedCallbacks('button-a', nullGamepad);
-    gamepad.runReleasedCallbacks('button-a', nullGamepad);
+    vuegamepad.switchToLayer('test');
+    mockGamepadButtonPress(vuegamepad, 'button-a');
+    mockGamepadButtonRelease(vuegamepad, 'button-a');
     
     // testLayerCallback should now have been called
     // defaultLayerCallback should not have been called any more times
@@ -123,15 +163,15 @@ describe('Binding', () => {
       },
     });
 
-    const gamepad = getGamepad(wrapper);
+    const vuegamepad = getVueGamepad(wrapper);
 
-    expect(gamepad.events['test']).toBeDefined();
-    gamepad.switchToLayer('test');
+    expect(vuegamepad.events['test']).toBeDefined();
+    vuegamepad.switchToLayer('test');
 
     wrapper.vm.show = false;
     await nextTick();
 
-    expect(gamepad.currentLayer).toEqual('');
-    expect(gamepad.events).toEqual({});
+    expect(vuegamepad.currentLayer).toEqual('');
+    expect(vuegamepad.events).toEqual({});
   });
 });

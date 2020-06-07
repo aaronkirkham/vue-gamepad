@@ -191,16 +191,16 @@
             };
             VueGamepad.prototype.runPressedCallbacks = function (buttonName, gamepad) {
                 var events = get(this.events, [this.currentLayer, 'pressed', buttonName], []);
-                if (events.length > 0) {
-                    var firstPress = typeof this.holding[buttonName] === 'undefined';
-                    var currentTime = Date.now();
-                    var event_1 = events[events.length - 1];
-                    if (firstPress || (event_1.repeat && (currentTime - this.holding[buttonName]) >= options.buttonRepeatTimeout)) {
-                        this.holding[buttonName] = currentTime;
-                        if (firstPress) {
-                            this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
-                        }
-                        event_1.callback.call(null, { buttonName: buttonName, gamepad: gamepad });
+                var firstPress = typeof this.holding[buttonName] === 'undefined';
+                var currentTime = Date.now();
+                var event = events[events.length - 1];
+                if (firstPress || (event && event.repeat && (currentTime - this.holding[buttonName]) >= options.buttonRepeatTimeout)) {
+                    this.holding[buttonName] = currentTime;
+                    if (firstPress) {
+                        this.holding[buttonName] += (options.buttonInitialTimeout - options.buttonRepeatTimeout);
+                    }
+                    if (event) {
+                        event.callback.call(null, { buttonName: buttonName, gamepad: gamepad });
                     }
                 }
             };
@@ -208,8 +208,8 @@
                 delete this.holding[buttonName];
                 var events = get(this.events, [this.currentLayer, 'released', buttonName], []);
                 if (events.length > 0) {
-                    var event_2 = events[events.length - 1];
-                    event_2.callback.call(null, { buttonName: buttonName, gamepad: gamepad });
+                    var event_1 = events[events.length - 1];
+                    event_1.callback.call(null, { buttonName: buttonName, gamepad: gamepad });
                 }
             };
             VueGamepad.prototype.update = function () {
@@ -231,8 +231,8 @@
                             _this.runPressedCallbacks(axisName, gamepad);
                         }
                         else {
-                            var axisNames = getAxisNames(index);
-                            axisNames.filter(function (axisName) { return _this.holding[axisName]; })
+                            getAxisNames(index)
+                                .filter(function (axisName) { return _this.holding[axisName]; })
                                 .forEach(function (axisName) { return _this.runReleasedCallbacks(axisName, gamepad); });
                         }
                     });
