@@ -1,5 +1,5 @@
 /*!
- * vue-gamepad v2.0.0-beta.4
+ * vue-gamepad v2.0.0-beta.5
  * (c) 2020 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */
@@ -160,13 +160,15 @@
             };
             VueGamepad.prototype.createLayer = function (layer, vnode) {
                 var _this = this;
-                if (!Array.isArray(vnode.children)) {
-                    return;
-                }
                 if (typeof this.vnodeLayers[layer] === 'undefined') {
                     this.vnodeLayers[layer] = [];
                 }
-                vnode.children.forEach(function (child) { return _this.vnodeLayers[layer].push(child); });
+                if (vnode.dirs) {
+                    this.vnodeLayers[layer].push(vnode);
+                }
+                if (Array.isArray(vnode.children)) {
+                    vnode.children.forEach(function (child) { return _this.createLayer(layer, child); });
+                }
             };
             VueGamepad.prototype.destroyLayer = function (layer) {
                 if (layer === this.currentLayer) {
@@ -259,7 +261,7 @@
             var gamepad = new VueGamepad();
             app.config.globalProperties.$gamepad = gamepad;
             app.directive('gamepad', {
-                beforeMount: function (el, binding, vnode) {
+                mounted: function (el, binding, vnode) {
                     var _a;
                     var result = gamepad.validBinding(binding, vnode);
                     if (result !== 2) {
