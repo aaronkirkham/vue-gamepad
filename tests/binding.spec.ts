@@ -98,7 +98,7 @@ describe('Binding', () => {
     expect(callback).toHaveBeenCalled();
   });
 
-  it('v-gamepad bindings were registered on correct layer', () => {
+  it('v-gamepad bindings were registered on the correct layer', () => {
     const callback = jest.fn();
     const wrapper = mount({
       template: `<div v-gamepad-layer="'test'">

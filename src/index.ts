@@ -25,7 +25,9 @@ export default {
 
     // v-gamepad directive
     app.directive('gamepad', {
-      beforeMount(el: any, binding: DirectiveBinding, vnode: VNode) {
+      // NOTE: since 3.0.0-beta.15, beforeMount in children are called before the parent which breaks our layer stuff
+      //       we use mounted now so the layer has a chance to bind before this
+      mounted(el: any, binding: DirectiveBinding, vnode: VNode) {
         const result = gamepad.validBinding(binding, vnode);
         if (result !== ValidBindingResult.E_OK) {
           console.error(`vue-gamepad: '${binding.arg}' was not bound. (${bindErrStr(result)})`);
