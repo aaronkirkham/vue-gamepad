@@ -2,10 +2,10 @@ import { DirectiveBinding, VNode } from 'vue';
 import { set, get } from './utils';
 import { DefaultOptions, getAxisNameFromValue, getAxisNames } from './options';
 
-export const enum ValidBindingResult {
-  E_INVALID_ARG,
-  E_INVALID_CALLBACK,
-  E_OK,
+export const enum BindingResult {
+  InvalidArg,
+  InvalidCallback,
+  Ok,
 }
 
 export default function(options: VueGamepadOptions = DefaultOptions) {
@@ -51,36 +51,34 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {DirectiveBinding} binding Vue binding from directive callback
      * @param {VNode} [vnode] Vue directive vnode
      */
-    validBinding(binding: DirectiveBinding, vnode?: VNode): ValidBindingResult {
+    validBinding(binding: DirectiveBinding, vnode: VNode): BindingResult {
       // binding has no directive arg. (v-gamepad:XXXX)
       if (typeof binding.arg === 'undefined') {
-        return ValidBindingResult.E_INVALID_ARG;
+        return BindingResult.InvalidArg;
       }
 
       const isFunction = typeof binding.value === 'function';
-      const hasOnClickCallback = typeof vnode?.props?.onClick === 'function';
+      const hasOnClickCallback = typeof vnode.props?.onClick === 'function';
 
       // if no function callback is passed to the directive, we will try use the onClick
       // handler, if that is also not set, we have no callback.
       if (!isFunction && !hasOnClickCallback) {
-        return ValidBindingResult.E_INVALID_CALLBACK;
+        return BindingResult.InvalidCallback;
       }
 
       // everything ok!
-      return ValidBindingResult.E_OK;
+      return BindingResult.Ok;
     }
 
     /**
      * Get the layer ID for a given vnode
      * @param {VNode} vnode Vue directive vnode
      */
-    getVNodeLayer(vnode?: VNode): string {
-      if (vnode) {
-        for (const layer in this.vnodeLayers) {
-          const found = this.vnodeLayers[layer].find((vn) => vn === vnode);
-          if (found) {
-            return layer;
-          }
+    getVNodeLayer(vnode: VNode): string {
+      for (const layer in this.vnodeLayers) {
+        const found = this.vnodeLayers[layer].find((vn) => vn === vnode);
+        if (found) {
+          return layer;
         }
       }
 
@@ -92,9 +90,9 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {string} event Name of the button event
      * @param {ListenerModifiers} modifiers Vue binding modifiers
      * @param {ListenerCallback} callback Callback function when button is pressed
-     * @param {VNode} [vnode] Vue directive vnode
+     * @param {VNode} vnode Vue directive vnode
      */
-    addListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode): void {
+    addListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode: VNode): void {
       const action = modifiers.released ? 'released' : 'pressed';
       const repeat = !!modifiers.repeat;
       const layer = this.getVNodeLayer(vnode);
@@ -109,7 +107,7 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
       this.events[layer][action][event].push({ vnode, repeat, callback });
 
       // inject classes
-      if (options.injectClasses && vnode && vnode.el) {
+      if (options.injectClasses && vnode.el) {
         vnode.el.classList.add(options.classPrefix, `${options.classPrefix}--${event}`);
       }
     }
@@ -119,9 +117,9 @@ export default function(options: VueGamepadOptions = DefaultOptions) {
      * @param {string} event Name of the button event
      * @param {ListenerModifiers} modifiers Vue binding modifiers
      * @param {ListenerCallback} callback Callback function when button is pressed
-     * @param {VNode} [vnode] Vue directive vnode
+     * @param {VNode} vnode Vue directive vnode
      */
-    removeListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode?: VNode): void {
+    removeListener(event: string, modifiers: ListenerModifiers, callback: ListenerCallback, vnode: VNode): void {
       const action = modifiers.released ? 'released' : 'pressed';
       const layer = this.getVNodeLayer(vnode);
 

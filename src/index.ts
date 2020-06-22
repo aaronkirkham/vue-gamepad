@@ -1,13 +1,10 @@
 import { App, DirectiveBinding, VNode } from 'vue';
 import { DefaultOptions } from './options';
-import VueGamepadFactory, { ValidBindingResult } from './gamepad';
+import VueGamepadFactory, { BindingResult } from './gamepad';
 
-function bindErrStr(result: ValidBindingResult) {
-  switch (result) {
-    case ValidBindingResult.E_INVALID_ARG: return 'missing directive argument (v-gamepad:button)';
-    case ValidBindingResult.E_INVALID_CALLBACK: return 'missing directive callback (v-gamepad:button="callback")';
-  }
-
+function bindErrStr(result: BindingResult) {
+  if (result === BindingResult.InvalidArg) return 'missing directive arg (v-gamepad:button)';
+  else if (result === BindingResult.InvalidCallback) return 'missing directive callback (v-gamepad:button="callback")';
   return '';
 }
 
@@ -29,21 +26,21 @@ export default {
       //       we use mounted now so the layer has a chance to bind before this
       mounted(el: any, binding: DirectiveBinding, vnode: VNode) {
         const result = gamepad.validBinding(binding, vnode);
-        if (result !== ValidBindingResult.E_OK) {
+        if (result !== BindingResult.Ok) {
           console.error(`vue-gamepad: '${binding.arg}' was not bound. (${bindErrStr(result)})`);
           return console.log(el);
         }
 
         // if binding doesn't contain any callback function, use the onClick callback
-        const callback = typeof binding.value === 'function' ? binding.value : vnode?.props?.onClick;
+        const callback = typeof binding.value === 'function' ? binding.value : vnode.props?.onClick;
         gamepad.addListener(binding.arg as string, binding.modifiers, callback, vnode);
       },
       beforeUnmount(el: any, binding: DirectiveBinding, vnode: VNode) {
-        if (gamepad.validBinding(binding, vnode) !== ValidBindingResult.E_OK) {
+        if (gamepad.validBinding(binding, vnode) !== BindingResult.Ok) {
           return;
         }
 
-        const callback = typeof binding.value === 'function' ? binding.value : vnode?.props?.onClick;
+        const callback = typeof binding.value === 'function' ? binding.value : vnode.props?.onClick;
         gamepad.removeListener(binding.arg as string, binding.modifiers, callback, vnode);
       },
     });

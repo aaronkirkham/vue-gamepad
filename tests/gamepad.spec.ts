@@ -1,8 +1,13 @@
-import VueGamepadFactory, { ValidBindingResult } from '../src/gamepad';
+import VueGamepadFactory, { BindingResult } from '../src/gamepad';
 import { DefaultOptions } from '../src/options';
 
 const testCallbackEventListener = jest.fn();
 let vuegamepad = new (VueGamepadFactory(DefaultOptions));
+
+function mockVNode() {
+  // @ts-ignore
+  return {} as VNode;
+}
 
 describe('Gamepad', () => {
   it('does not allow invalid bindings', () => {
@@ -14,9 +19,9 @@ describe('Gamepad', () => {
       arg: undefined,
       modifiers: {},
       dir: {},
-    });
+    }, mockVNode());
 
-    expect(invalidArgBinding).toEqual(ValidBindingResult.E_INVALID_ARG);
+    expect(invalidArgBinding).toEqual(BindingResult.InvalidArg);
 
     // missing directive callback (v-gamepad:button-a="")
     const invalidCallbackBinding = vuegamepad.validBinding({
@@ -26,25 +31,25 @@ describe('Gamepad', () => {
       arg: 'button-a',
       modifiers: {},
       dir: {},
-    });
+    }, mockVNode());
 
-    expect(invalidCallbackBinding).toEqual(ValidBindingResult.E_INVALID_CALLBACK);
+    expect(invalidCallbackBinding).toEqual(BindingResult.InvalidCallback);
 
     // valid binding, has arg and callback
     const validBinding = vuegamepad.validBinding({
       instance: null,
-      value: () => console.log('callback'),
+      value: () => {},
       oldValue: undefined,
       arg: 'button-a',
       modifiers: {},
       dir: {},
-    });
+    }, mockVNode());
     
-    expect(validBinding).toEqual(ValidBindingResult.E_OK);
+    expect(validBinding).toEqual(BindingResult.Ok);
   });
 
   it('registered an event listener', () => {
-    vuegamepad.addListener('button-a', {}, testCallbackEventListener);
+    vuegamepad.addListener('button-a', {}, testCallbackEventListener, mockVNode());
     expect(vuegamepad.events['']['pressed']['button-a']).toBeDefined();
     expect(vuegamepad.events['']['pressed']['button-a'][0].callback).toEqual(testCallbackEventListener);
   });
@@ -57,7 +62,7 @@ describe('Gamepad', () => {
   });
 
   it('unregistered an event listener', () => {
-    vuegamepad.removeListener('button-a', {}, testCallbackEventListener);
+    vuegamepad.removeListener('button-a', {}, testCallbackEventListener, mockVNode());
     expect(vuegamepad.events['']['pressed']['button-a']).toBeUndefined();
   });
 
