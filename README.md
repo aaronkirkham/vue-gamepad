@@ -18,7 +18,7 @@ $ yarn add vue-gamepad
 ```
 
 #### CDN
-https://unpkg.com/vue-gamepad/dist/vue-gamepad.min.js
+https://unpkg.com/vue-gamepad@beta/dist/vue-gamepad.min.js
 
 ## Usage
 Tell Vue to use the plugin
