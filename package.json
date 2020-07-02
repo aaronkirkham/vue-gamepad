@@ -38,16 +38,16 @@
     "@types/jest": "^26.0.3",
     "@typescript-eslint/eslint-plugin": "^3.5.0",
     "@typescript-eslint/parser": "^3.5.0",
-    "@vue/compiler-sfc": "^3.0.0-beta.17",
-    "@vue/test-utils": "^2.0.0-alpha.7",
+    "@vue/compiler-sfc": "^3.0.0-beta.18",
+    "@vue/test-utils": "^2.0.0-alpha.8",
     "eslint": "^7.3.1",
     "jest": "^26.1.0",
-    "rollup": "^2.18.1",
+    "rollup": "^2.18.2",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-uglify": "^6.0.4",
     "ts-jest": "^26.1.1",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.5",
-    "vue": "^3.0.0-beta.17"
+    "typescript": "^3.9.6",
+    "vue": "^3.0.0-beta.18"
   }
 }
