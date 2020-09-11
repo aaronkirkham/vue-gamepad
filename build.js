@@ -2,7 +2,7 @@ const path = require('path');
 const rollup = require('rollup');
 const typescript = require('@rollup/plugin-typescript');
 const cleanup = require('rollup-plugin-cleanup');
-const uglify = require('rollup-plugin-uglify');
+const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
 const banner = `/*!
@@ -11,14 +11,13 @@ const banner = `/*!
  * Released under the ${pkg.license} License.
  */`;
 
-function nullsub() {
-  return {
-    name: 'nullsub',
-  };
-}
-
-async function build(minify = false) {
+async function build({ minify = false } = {}) {
   const filename = `${pkg.name}.${minify ? 'min.' : ''}js`;
+
+  const terserOpts = {
+    compress: true,
+    mangle: true,
+  };
 
   try {
     const bundle = await rollup.rollup({
@@ -26,7 +25,7 @@ async function build(minify = false) {
       plugins: [
         typescript(),
         cleanup({ comments: 'none' }),
-        minify ? uglify.uglify({ output: { comments: true } }) : nullsub,
+        ...minify ? [terser(terserOpts)] : [],
       ]
     });
 
@@ -45,4 +44,4 @@ async function build(minify = false) {
 }
 
 build();
-build(true);
+build({ minify: true });
