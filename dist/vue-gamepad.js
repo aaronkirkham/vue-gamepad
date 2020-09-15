@@ -1,12 +1,12 @@
 /*!
- * vue-gamepad v2.0.0-beta.5
+ * vue-gamepad v2.0.0-beta.6
  * (c) 2020 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    (global = global || self, global.VueGamepad = factory());
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.VueGamepad = factory());
 }(this, (function () { 'use strict';
 
     var __assign = function() {
@@ -113,19 +113,17 @@
                     return 0;
                 }
                 var isFunction = typeof binding.value === 'function';
-                var hasOnClickCallback = typeof ((_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick) === 'function';
+                var hasOnClickCallback = typeof ((_a = vnode.props) === null || _a === void 0 ? void 0 : _a.onClick) === 'function';
                 if (!isFunction && !hasOnClickCallback) {
                     return 1;
                 }
                 return 2;
             };
             VueGamepad.prototype.getVNodeLayer = function (vnode) {
-                if (vnode) {
-                    for (var layer in this.vnodeLayers) {
-                        var found = this.vnodeLayers[layer].find(function (vn) { return vn === vnode; });
-                        if (found) {
-                            return layer;
-                        }
+                for (var layer in this.vnodeLayers) {
+                    var found = this.vnodeLayers[layer].find(function (vn) { return vn === vnode; });
+                    if (found) {
+                        return layer;
                     }
                 }
                 return '';
@@ -139,7 +137,7 @@
                     set(this.events, [layer, action, event], []);
                 }
                 this.events[layer][action][event].push({ vnode: vnode, repeat: repeat, callback: callback });
-                if (options.injectClasses && vnode && vnode.el) {
+                if (options.injectClasses && vnode.el) {
                     vnode.el.classList.add(options.classPrefix, options.classPrefix + "--" + event);
                 }
             };
@@ -246,10 +244,10 @@
     }
 
     function bindErrStr(result) {
-        switch (result) {
-            case 0: return 'missing directive argument (v-gamepad:button)';
-            case 1: return 'missing directive callback (v-gamepad:button="callback")';
-        }
+        if (result === 0)
+            return 'missing directive arg (v-gamepad:button)';
+        else if (result === 1)
+            return 'missing directive callback (v-gamepad:button="callback")';
         return '';
     }
     var index = {
@@ -268,7 +266,7 @@
                         console.error("vue-gamepad: '" + binding.arg + "' was not bound. (" + bindErrStr(result) + ")");
                         return console.log(el);
                     }
-                    var callback = typeof binding.value === 'function' ? binding.value : (_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
+                    var callback = typeof binding.value === 'function' ? binding.value : (_a = vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
                     gamepad.addListener(binding.arg, binding.modifiers, callback, vnode);
                 },
                 beforeUnmount: function (el, binding, vnode) {
@@ -276,7 +274,7 @@
                     if (gamepad.validBinding(binding, vnode) !== 2) {
                         return;
                     }
-                    var callback = typeof binding.value === 'function' ? binding.value : (_a = vnode === null || vnode === void 0 ? void 0 : vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
+                    var callback = typeof binding.value === 'function' ? binding.value : (_a = vnode.props) === null || _a === void 0 ? void 0 : _a.onClick;
                     gamepad.removeListener(binding.arg, binding.modifiers, callback, vnode);
                 },
             });
