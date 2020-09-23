@@ -14,9 +14,6 @@
     "test": "jest --no-cache",
     "lint": "eslint lib/**"
   },
-  "files": [
-    "dist"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aaronkirkham/vue-gamepad.git"
