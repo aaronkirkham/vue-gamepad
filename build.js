@@ -2,7 +2,7 @@ const path = require('path');
 const rollup = require('rollup');
 const babel = require('rollup-plugin-babel');
 const cleanup = require('rollup-plugin-cleanup');
-const uglify = require('rollup-plugin-uglify');
+const terser = require('rollup-plugin-terser').terser;
 const pkg = require('./package.json');
 
 const banner = `/*!
@@ -11,14 +11,13 @@ const banner = `/*!
  * Released under the ${pkg.license} License.
  */`;
 
-function nullsub() {
-  return {
-    name: 'nullsub',
-  };
-}
-
 async function build(minify = false) {
   const filename = `vue-gamepad.${minify ? 'min.' : ''}js`;
+
+  const terserOpts = {
+    compress: true,
+    mangle: true,
+  };
 
   try {
     const bundle = await rollup.rollup({
@@ -26,8 +25,7 @@ async function build(minify = false) {
       plugins: [
         babel(),
         cleanup(),
-        // allow comments when minifying to preserve banner, comments are removed by plugin-cleanup.
-        minify ? uglify.uglify({ output: { comments: true } }) : nullsub,
+        ...minify ? [terser(terserOpts)] : [],
       ],
     });
 

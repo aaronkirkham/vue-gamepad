@@ -1,12 +1,12 @@
 /*!
- * vue-gamepad v1.1.1
+ * vue-gamepad v1.1.2
  * (c) 2020 Aaron Kirkham <aaron@kirkh.am>
  * Released under the MIT License.
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global = global || self, global.VueGamepad = factory());
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.VueGamepad = factory());
 }(this, (function () { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
@@ -281,7 +281,7 @@
         buttonInitialTimeout: 200,
         injectClasses: true
       };
-      var Gamepad = GamepadFactory(Vue, _objectSpread2({}, DefaultOptions, {}, options));
+      var Gamepad = GamepadFactory(Vue, _objectSpread2(_objectSpread2({}, DefaultOptions), options));
       var gamepad = new Gamepad();
       Vue.prototype.$gamepad = gamepad;
       Vue.directive('gamepad', {
