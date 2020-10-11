@@ -1,4 +1,4 @@
-interface VueGamepadOptions {
+declare interface VueGamepadOptions {
   analogThreshold: number;
   buttonNames: Array<string>;
   buttonInitialTimeout: number;
@@ -7,12 +7,12 @@ interface VueGamepadOptions {
   classPrefix: string;
 }
 
-interface ListenerModifiers {
+declare interface ListenerModifiers {
   released?: boolean;
   repeat?: boolean;
 }
 
-interface VueGamepadEvents {
+declare interface VueGamepadEvents {
   [layer: string]: {
     [action: string]: {
       [event: string]: VueGamepadEvent[];
@@ -20,14 +20,14 @@ interface VueGamepadEvents {
   };
 }
 
-interface ListenerCallbackEvent {
+declare interface ListenerCallbackEvent {
   buttonName: string;
   gamepad: Gamepad;
 }
 
 declare type ListenerCallback = (event: ListenerCallbackEvent) => any;
 
-interface VueGamepadEvent {
+declare interface VueGamepadEvent {
   vnode: any;
   repeat: boolean;
   callback: ListenerCallback;

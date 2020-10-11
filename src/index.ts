@@ -23,7 +23,7 @@ export default {
     // v-gamepad directive
     app.directive('gamepad', {
       // NOTE: since 3.0.0-beta.15, beforeMount in children are called before the parent which breaks our layer stuff
-      //       we use mounted now so the layer has a chance to bind before this
+      //       we use mounted now so the layer directive has a chance to bind before this
       mounted(el: any, binding: DirectiveBinding, vnode: VNode) {
         const result = gamepad.validBinding(binding, vnode);
         if (result !== BindingResult.Ok) {
@@ -35,7 +35,7 @@ export default {
         const callback = typeof binding.value === 'function' ? binding.value : vnode.props?.onClick;
         gamepad.addListener(binding.arg as string, binding.modifiers, callback, vnode);
       },
-      beforeUnmount(el: any, binding: DirectiveBinding, vnode: VNode) {
+      beforeUnmount(_el: any, binding: DirectiveBinding, vnode: VNode) {
         if (gamepad.validBinding(binding, vnode) !== BindingResult.Ok) {
           return;
         }
@@ -57,7 +57,7 @@ export default {
       },
       // we use unmounted instead of beforeUnmount so that all other directives have a chance to
       // cleanup before the layer is destroyed.
-      unmounted(el: any, binding: DirectiveBinding) {
+      unmounted(_el: any, binding: DirectiveBinding) {
         if (typeof binding.value === 'undefined') {
           return;
         }

@@ -5,9 +5,9 @@
  * console.log(object.x.y.z);
  *  => default
  *
- * @param {object} obj object to build properties for
- * @param {array} keys list of keys to nest
- * @param {any} value value to set
+ * @param obj object to build properties for
+ * @param keys list of keys to nest
+ * @param value value to set
  */
 export function set<T>(obj: any, keys: Array<any>, value: any): Array<T> {
   obj[keys[0]] = obj[keys[0]] || {};
@@ -29,9 +29,9 @@ export function set<T>(obj: any, keys: Array<any>, value: any): Array<T> {
  * get({ x: { y: 0 } }, ['x', 'y', 'z'], [])
  * => []
  *
- * @param {object} obj object to get properties from
- * @param {array} keys list of keys to use
- * @param {any} [def=undefined] default value if nothing was found
+ * @param obj object to get properties from
+ * @param keys list of keys to use
+ * @param default value if nothing was found
  */
 export function get<T>(obj: any, keys: Array<any>, def: any = undefined): Array<T> {
   const tmp = obj[keys[0]];
