@@ -9,6 +9,8 @@
 
 A Vue.js plugin to add gamepad support. Bind any element to trigger a callback when a gamepad button is pressed.
 
+For Vue 2.x support, [see vue-2.x](tree/vue-2.x).
+
 ## Installation
 #### npm/yarn
 ```bash
