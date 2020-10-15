@@ -7,14 +7,30 @@
     <script src="../../../node_modules/vue/dist/vue.global.js"></script>
     <script src="../../../dist/vue-gamepad.js"></script>
     <style>
-      #app {
+      .container {
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto auto 1fr;
         grid-gap: 25px;
+        background-color: #ccc;
+        padding: 10px;
       }
 
-      aside:not(.hasFocus) {
-        opacity: 0.45;
+      aside {
+        width: 200px;
+        padding: 15px 20px;
+        border: 2px dashed black;
+      }
+
+      aside:not(.current-layer) {
+        opacity: 0.5;
+      }
+
+      .current-layer {
+        border-color: red;
+      }
+
+      p {
+        margin: 0 0 10px 0;
       }
 
       nav button {
@@ -29,72 +45,93 @@
       main button {
         margin-right: 5px;
       }
+
+      .clear {
+        margin-top: 15px;
+      }
+
+      code {
+        background-color: #efefef;
+        padding: 5px;
+      }
     </style>
   </head>
   <body>
     <div id="app">
-      <aside :class="{ 'hasFocus': selected === -1 }">
-        <nav v-gamepad:button-dpad-up.repeat="selectMoveUp"
-          v-gamepad:button-dpad-down.repeat="selectMoveDown"
-          v-gamepad:left-analog-up.repeat="selectMoveUp"
-          v-gamepad:left-analog-down.repeat="selectMoveDown"
-          v-gamepad:button-a="selectOption">
-          <button v-for="(option, i) in options" :class="{ 'focus': highlighted === i }" @click="selectOption(i)">{{ option }}</button>
-        </nav>
-      </aside>
-      <main v-if="selected >= 0" v-gamepad-layer="'test'">
-        <button v-gamepad:button-a @click="confirm">(A) Confirm Selection</button>
-        <button v-gamepad:button-b @click="cancel">(B) Cancel Selection</button>
-        <p>{{ message }}</p>
-      </main>
+      <h2>Layers</h2>
+      <p>Layers are very useful when you need to bind multiple actions to a single button. Because vue-gamepad events are handled using a last-in-first-out method, it is only possible to bind a button to a single action at a time.</p>
+      <p>You can programmatically switch between layers using <code>app.config.globalProperties.$gamepad.switchToLayer('layer-name');</code>.</p>
+      <p>In this example, we use d-pad buttons to traverse multiple navigation menus, each on separate layers.</p>
+      <p>
+        Use the <strong>d-pad left/right</strong> buttons to switch between layers.<br/>
+        When inside a layer (highlighted in red), use the <strong>d-pad up/down</strong> buttons to switch between options.
+      </p>
+      <div class="container">
+        <aside v-gamepad:button-dpad-right="switchToColorLayer" :class="{'current-layer': !isOnColorLayer}">
+          <p>Default Layer</p>
+          <nav v-gamepad:button-dpad-up.repeat="selectMoveUp"
+            v-gamepad:button-dpad-down.repeat="selectMoveDown">
+            <button v-for="(fruit, i) in fruits" :class="{ 'focus': highlightedFruit === i }">{{ fruit }}</button>
+          </nav>
+        </aside>
+        <aside v-gamepad-layer="'color'" v-gamepad:button-dpad-left="switchToFruitLayer" :class="{'current-layer': isOnColorLayer}">
+          <p>Custom Layer</p>
+          <nav v-gamepad:button-dpad-up.repeat="selectMoveUp"
+            v-gamepad:button-dpad-down.repeat="selectMoveDown">
+            <button v-for="(color, i) in colors" :class="{ 'focus': highlightedColor === i }">{{ color }}</button>
+          </nav>
+        </aside>
+      </div>
     </div>
     <script>
       const app = Vue.createApp({
         setup() {
-          const options = ['Apple', 'Orange', 'Banana', 'Strawberry', 'Pineapple', 'Mango'];
-          const highlighted = Vue.ref(-1);
-          const selected = Vue.ref(-1);
-          const message = Vue.ref('');
+          const fruits = ['Apple', 'Orange', 'Banana', 'Strawberry', 'Pineapple', 'Mango'];
+          const colors = ['Red', 'Green', 'Blue', 'Yellow', 'Orange', 'Pink'];
 
+          const highlightedFruit = Vue.ref(0);
+          const highlightedColor = Vue.ref(0);
+          const selectedFruit = Vue.ref(0);
+          const selectedColor = Vue.ref(0);
+          const isOnColorLayer = Vue.ref(false);
+          
           const $gamepad = app.config.globalProperties.$gamepad;
 
+          function switchToColorLayer() {
+            $gamepad.switchToLayer('color');
+            isOnColorLayer.value = true;
+          }
+
+          function switchToFruitLayer() {
+            $gamepad.switchToDefaultLayer();
+            isOnColorLayer.value = false;
+          }
+
           function selectMoveUp() {
-            highlighted.value = Math.max(highlighted.value - 1, 0);
+            const highlight = $gamepad.currentLayer === 'color' ? highlightedColor : highlightedFruit;
+            highlight.value = Math.max(highlight.value - 1, 0);
           }
 
           function selectMoveDown() {
-            highlighted.value = Math.min(highlighted.value + 1, options.length - 1);
-          }
-
-          function selectOption(option) {
-            option = option || highlighted.value;
-            highlighted.value = option;
-            selected.value = option;
-            message.value = '';
-
-            // manually switch to layer
-            $gamepad.switchToLayer('test');
-          }
-
-          function confirm() {
-            message.value = `You selected ${options[selected.value]}`;
-          }
-
-          function cancel() {
-            selected.value = -1;
-            $gamepad.switchToDefaultLayer();
+            if ($gamepad.currentLayer === 'color') {
+              highlightedColor.value = Math.min(highlightedColor.value + 1, colors.length - 1);
+            } else {
+              highlightedFruit.value = Math.min(highlightedFruit.value + 1, fruits.length - 1);
+            }
           }
 
           return {
-            options,
-            highlighted,
-            selected,
-            message,
+            fruits,
+            colors,
+            highlightedFruit,
+            highlightedColor,
+            selectedFruit,
+            selectedColor,
+            isOnColorLayer,
+            switchToColorLayer,
+            switchToFruitLayer,
             selectMoveUp,
             selectMoveDown,
-            selectOption,
-            confirm,
-            cancel,
           };
         }
       });
